@@ -31,7 +31,7 @@ static std::string get_shader_type_str(ShaderType shaderType)
     throw std::runtime_error("unknown shader type");
 }
 
-ShaderProgram::ShaderProgram(std::initializer_list<ShaderDefinition> shaderDefinitions)
+ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefinitions)
 {
 
     std::vector<uint32_t> shaderIds;
@@ -94,13 +94,76 @@ ShaderProgram::ShaderProgram(std::initializer_list<ShaderDefinition> shaderDefin
     }
 }
 
+int32_t ShaderProgram::get_uniform_location(const std::string &name)
+{
+    auto it = uniformLocations.find(name);
+    if (it != uniformLocations.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        auto location = glGetUniformLocation(id, name.c_str());
+        if (location < 0)
+        {
+            throw std::runtime_error("uniform " + name + " not found");
+        }
+        uniformLocations[name] = location;
+        return location;
+    }
+}
+
 ShaderProgram::~ShaderProgram()
 {
     glDeleteProgram(id);
 }
 
-void ShaderProgram::run(int vertices) {
+void ShaderProgram::use()
+{
+    glUseProgram(id);
+}
+
+void ShaderProgram::run(int vertices)
+{
     assert(vertices % 3 == 0);
     glUseProgram(id);
     glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, nullptr);
+}
+
+void ShaderProgram::set_uniform(const std::string &name, int32_t value)
+{
+    glUniform1i(get_uniform_location(name), value);
+}
+
+void ShaderProgram::set_uniform(const std::string &name, uint32_t value)
+{
+    glUniform1ui(get_uniform_location(name), value);
+}
+void ShaderProgram::set_uniform(const std::string &name, float value)
+{
+    glUniform1f(get_uniform_location(name), value);
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Vector2f &value)
+{
+    glUniform2fv(get_uniform_location(name), 1, value.data());
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Vector3f &value)
+{
+    glUniform3fv(get_uniform_location(name), 1, value.data());
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Vector4f &value)
+{
+    glUniform4fv(get_uniform_location(name), 1, value.data());
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Matrix2f &value)
+{
+    glUniformMatrix2fv(get_uniform_location(name), 1, GL_FALSE, value.data());
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Matrix3f &value)
+{
+    glUniformMatrix3fv(get_uniform_location(name), 1, GL_FALSE, value.data());
+}
+void ShaderProgram::set_uniform(const std::string &name, const Eigen::Matrix4f &value)
+{
+    glUniformMatrix4fv(get_uniform_location(name), 1, GL_FALSE, value.data());
 }

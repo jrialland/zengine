@@ -8,21 +8,33 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <map>
 #include <stdexcept>
 
-static int window_instances = 0;
 static bool glew_inited = false;
+
+static std::map<GLFWwindow *, Window *> window_map;
 
 static void error_callback(int error, const char *description)
 {
     DLOG(ERROR) << "GLFW error " << error << " : " << description;
 }
 
+static void resize_callback(GLFWwindow *window, int width, int height)
+{
+    auto it = window_map.find(window);
+    if (it != window_map.end())
+    {
+        Eigen::Vector2i size(width, height);
+        it->second->resized(size);
+    }
+}
+
 Window::Window(const std::string &title, int width, int height, bool fullscreen)
 {
 
     // initialize glfw if necessary
-    if (window_instances == 0)
+    if (window_map.empty())
     {
         if (!glfwInit())
         {
@@ -30,7 +42,6 @@ Window::Window(const std::string &title, int width, int height, bool fullscreen)
         }
         glfwSetErrorCallback(error_callback);
     }
-    window_instances += 1;
 
     // create the GWLF window
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -39,6 +50,10 @@ Window::Window(const std::string &title, int width, int height, bool fullscreen)
     if (!handle)
     {
         throw std::runtime_error("GLFW window or context creation failed");
+    }
+    else
+    {
+        window_map[(GLFWwindow *)handle] = this;
     }
 
     glfwMakeContextCurrent((GLFWwindow *)handle);
@@ -59,13 +74,16 @@ Window::Window(const std::string &title, int width, int height, bool fullscreen)
             glew_inited = true;
         }
     }
+
+    // set up callbacks
+    glfwSetFramebufferSizeCallback((GLFWwindow *)handle, resize_callback);
 }
 
 Window::~Window()
 {
     glfwDestroyWindow((GLFWwindow *)handle);
-    window_instances -= 1;
-    if (window_instances == 0)
+    window_map.erase((GLFWwindow *)handle);
+    if (window_map.empty())
     {
         glfwTerminate();
     }
@@ -85,4 +103,11 @@ int Window::render_loop(int argc, char **argv)
         glfwPollEvents();
     }
     return 0;
+}
+
+Eigen::Vector2i Window::get_size() const
+{
+    int width, height;
+    glfwGetFramebufferSize((GLFWwindow *)handle, &width, &height);
+    return Eigen::Vector2i(width, height);
 }

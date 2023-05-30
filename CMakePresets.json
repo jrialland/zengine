@@ -18,10 +18,6 @@
 			},
 			"toolchainFile": "vcpkg/scripts/buildsystems/vcpkg.cmake",
 			"cacheVariables": {
-				"CMAKE_TOOLCHAIN_FILE" : {
-					"value": "vcpkg/scripts/buildsystems/vcpkg.cmake",
-					"type": "FILEPATH"
-				},
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
@@ -48,9 +44,9 @@
 				"rhs": "Windows"
 			},
 			"cacheVariables": {
-				"VCPKG_TARGET_TRIPLET": "x64-linux-dynamic",
-				"CMAKE_C_COMPILER": "c:\\TDM\\bin\\gcc.exe",
-				"CMAKE_CXX_COMPILER": "c:\\TDM\\bin\\g++.exe"
+				"VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+				"CMAKE_C_COMPILER": "C:/TDM-GCC-64/bin/gcc.exe",
+				"CMAKE_CXX_COMPILER": "C:/TDM-GCC-64/bin/g++.exe"
 			}
 		}
 	]
