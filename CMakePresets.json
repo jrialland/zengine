@@ -1,0 +1,57 @@
+{
+	"version": 6,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 19,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name": "default",
+			"displayName": "Default Config",
+			"description": "Default build using Ninja generator",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build",
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"toolchainFile": "vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"cacheVariables": {
+				"CMAKE_TOOLCHAIN_FILE" : {
+					"value": "vcpkg/scripts/buildsystems/vcpkg.cmake",
+					"type": "FILEPATH"
+				},
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "x64-linux-dynamic",
+			"inherits": "default",
+			"displayName": "x64-linux-dynamic",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Linux"
+			},
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-linux-dynamic"
+			}
+		},
+		{
+			"name": "x64-mingw64-dynamic",
+			"inherits": "default",
+			"displayName": "x64-mingw-dynamic",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-linux-dynamic",
+				"CMAKE_C_COMPILER": "c:\\TDM\\bin\\gcc.exe",
+				"CMAKE_CXX_COMPILER": "c:\\TDM\\bin\\g++.exe"
+			}
+		}
+	]
+}
