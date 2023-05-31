@@ -1,11 +1,40 @@
-#include "Window.hpp"
+#include "Application.hpp"
+#include "SkyboxPass.hpp"
 
-#include <glog/logging.h>
+class Example1 : public Application
+{
 
-int main(int argc, char **argv) {
-	// Initialize Google's logging library.
-	google::InitGoogleLogging(argv[0]);
+	void init() override
+	{
 
-	Window window;
-	return window.render_loop(argc, argv);
+		get_rendering_system().add_pass("skybox", std::make_shared<SkyboxPass>());
+	}
+};
+
+#ifdef _WIN32
+
+#include <Windows.h>
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	try
+	{
+		Example1 example1;
+		return example1.run(0, nullptr);
+	}
+	catch (const std::exception &e)
+	{
+		MessageBoxA(nullptr, e.what(), "Error", MB_OK);
+		return 1;
+	}
 }
+
+#else
+
+int main(int argc, char **argv)
+{
+	Example1 example1;
+	return example1.run(argc, argv);
+}
+
+#endif

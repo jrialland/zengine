@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 
 class Blob
 {
@@ -32,6 +33,7 @@ public:
     template <typename T>
     T as() const
     {
+        static_assert(std::is_pointer<T>::value, "T must be a pointer type");
         return (T)ptr;
     }
 };

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <Eigen/Dense>
-
-inline float degToRad(float deg) {
-    return deg * M_PI / 180.0f;
-}
+#include "Math.hpp"
 
 class Camera {
     protected:

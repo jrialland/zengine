@@ -3,13 +3,9 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-RenderingSystem::RenderingSystem(Window &window_) : window(window_)
+RenderingSystem::RenderingSystem()
 {
-    auto size = window.get_size();
-    camera = std::shared_ptr<Camera>(new PerspectiveCamera(degToRad(60.0f), size.x() / (float)size.y(), 0.1f, 1000.0f));
-    window.resized.connect([&](const Eigen::Vector2i &size) {
-        camera->set_aspect(size.x() / (float)size.y());
-    });
+    camera = std::shared_ptr<Camera>(new PerspectiveCamera(degToRad(60.0f), 1.0, 0.1f, 1000.0f));
     init();
     init_passes();
 }
@@ -145,7 +141,7 @@ std::shared_ptr<Pass> RenderingSystem::get_pass(const std::string &name) {
     return it->pass;
 }
 
-void RenderingSystem::execute()
+void RenderingSystem::render()
 {
     for (auto &passInfo : passes)
     {

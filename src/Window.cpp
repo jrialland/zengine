@@ -89,22 +89,6 @@ Window::~Window()
     }
 }
 
-int Window::render_loop(int argc, char **argv)
-{
-    GLFWwindow *window = (GLFWwindow *)handle;
-    while (!glfwWindowShouldClose(window))
-    {
-
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // render code goes here
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    return 0;
-}
-
 Eigen::Vector2i Window::get_size() const
 {
     int width, height;

@@ -4,14 +4,11 @@
 #include <string>
 #include <memory>
 
-#include "Window.hpp"
 #include "Camera.hpp"
 
 struct Pass;
 
 class RenderingSystem {
-
-    Window& window;
 
     struct PassInfo {
         std::string name;
@@ -23,17 +20,17 @@ class RenderingSystem {
 
     std::shared_ptr<Camera> camera;
 
-    void add_pass(const std::string &name, std::shared_ptr<Pass> pass, const std::string &after = "", const std::string &before = "");
-
     public:
 
-    RenderingSystem(Window& window);
+    RenderingSystem();
 
     ~RenderingSystem();
 
     virtual void init();
 
     virtual void init_passes();
+
+    void add_pass(const std::string &name, std::shared_ptr<Pass> pass, const std::string &after = "", const std::string &before = "");
 
     void add_pass_before(const std::string &name, std::shared_ptr<Pass> pass, const std::string &before);
 
@@ -51,7 +48,7 @@ class RenderingSystem {
 
     std::shared_ptr<Pass> get_pass(const std::string &name);
 
-    void execute();
+    void render();
 
     std::shared_ptr<Camera> get_camera() const;
 };

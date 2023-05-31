@@ -48,6 +48,20 @@
 				"CMAKE_C_COMPILER": "C:/TDM-GCC-64/bin/gcc.exe",
 				"CMAKE_CXX_COMPILER": "C:/TDM-GCC-64/bin/g++.exe"
 			}
+		},
+		{
+			"name": "x64-windows-dynamic",
+			"inherits": "default",
+			"displayName": "x64-windows-dynamic",
+			"generator": "Visual Studio 17 2022",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-windows-dynamic"
+			}
 		}
 	]
 }
