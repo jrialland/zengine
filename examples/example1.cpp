@@ -1,3 +1,4 @@
+#include "Logging.hpp"
 #include "Application.hpp"
 #include "SkyboxPass.hpp"
 
@@ -11,30 +12,13 @@ class Example1 : public Application
 	}
 };
 
-#ifdef _WIN32
-
-#include <Windows.h>
-
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int main(int argc, char **argv)
 {
-	try
-	{
+	try {
 		Example1 example1;
-		return example1.run(0, nullptr);
-	}
-	catch (const std::exception &e)
-	{
-		MessageBoxA(nullptr, e.what(), "Error", MB_OK);
+		return example1.run(argc, argv);
+	} catch(std::exception &e) {
+		LOG(ERROR) << e.what();
 		return 1;
 	}
 }
-
-#else
-
-int main(int argc, char **argv)
-{
-	Example1 example1;
-	return example1.run(argc, argv);
-}
-
-#endif

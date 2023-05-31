@@ -25,7 +25,7 @@ SkyboxPass::SkyboxPass(const std::string &cubemapPath)
                  1.0,  1.0,  1.0  // 7
             );
 
-            const float indices[36] = float[](
+            const float indices[6 * 6] = float[](
                 0, 1, 2, 2, 1, 3,
                 4, 6, 5, 5, 6, 7,
                 0, 4, 1, 1, 4, 5,

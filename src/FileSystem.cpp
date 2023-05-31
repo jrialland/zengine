@@ -48,7 +48,7 @@ public:
         std::ifstream file(path.string().c_str(), std::ios::binary | std::ios::ate);
         if (!file)
         {
-            throw std::runtime_error("Failed to open file");
+            throw std::runtime_error("Failed to open file '" + path.string() + "' for reading");
         }
         auto size = file.tellg();
         file.seekg(0, std::ios::beg);
@@ -62,7 +62,7 @@ public:
         std::ofstream file(path.string().c_str(), std::ios::binary);
         if (!file)
         {
-            throw std::runtime_error("Failed to open file");
+            throw std::runtime_error("Failed to open file '" + path.string() + "' for writing");
         }
         file.write(reinterpret_cast<const char *>(blob.get_ptr()), blob.get_size());
     }

@@ -7,7 +7,6 @@
 	],
 	"dependencies" : [
 		"fmt",
-		"glog",
 		"eigen3",
 		"opengl",
 		"glew",

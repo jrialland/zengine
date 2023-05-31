@@ -36,6 +36,7 @@ ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefiniti
 
     std::vector<uint32_t> shaderIds;
 
+    // compile shaders
     for (auto &shaderDef : shaderDefinitions)
     {
 
@@ -62,13 +63,19 @@ ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefiniti
         }
     }
 
+    // create program
     id = glCreateProgram();
 
+    // attach compiled shaders to the program
     for (auto shaderId : shaderIds)
     {
         glAttachShader(id, shaderId);
     }
 
+    // link the program
+    glLinkProgram(id);
+
+    // check for linking errors
     int32_t linked = 0;
     glGetProgramiv(id, GL_LINK_STATUS, &linked);
     if (!linked)
@@ -87,6 +94,7 @@ ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefiniti
         throw std::runtime_error("Could not link shader program : " + message);
     }
 
+    // detach and delete shaders
     for (auto shaderId : shaderIds)
     {
         glDetachShader(id, shaderId);
@@ -127,7 +135,18 @@ void ShaderProgram::run(int vertices)
 {
     assert(vertices % 3 == 0);
     glUseProgram(id);
-    glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, nullptr);
+
+    // bind and empty EBO
+    uint32_t ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+    glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, NULL);
+
+    // unbind EBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &ebo);
+
 }
 
 void ShaderProgram::set_uniform(const std::string &name, int32_t value)

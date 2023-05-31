@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 # project dependencies, see vcpkg settings
 find_package(Threads REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(glog CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
@@ -51,11 +50,14 @@ target_link_libraries(zengine PRIVATE
     Threads::Threads
     stdc++fs
     fmt::fmt
-    glog::glog
     OpenGL::GL
     GLEW::GLEW
     glfw
 )
+if(WIN32)
+  target_link_libraries(zengine PRIVATE wsock32 ws2_32)
+endif()
+
 target_include_directories(zengine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${stb_SOURCE_DIR}
@@ -77,6 +79,6 @@ file(GLOB_RECURSE EXAMPLES_SOURCES examples/**.cpp)
 foreach(EXAMPLE_SOURCE ${EXAMPLES_SOURCES})
     get_filename_component(EXAMPLE_NAME ${EXAMPLE_SOURCE} NAME_WE)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE_SOURCE})
-    target_link_libraries(${EXAMPLE_NAME} zengine glog::glog)
+    target_link_libraries(${EXAMPLE_NAME} zengine)
     target_include_directories(${EXAMPLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 endforeach()

@@ -1,8 +1,32 @@
 #include "Application.hpp"
-#include <glog/logging.h>
 #include <GLFW/glfw3.h>
 
+#if defined(MSVC) || defined(__MINGW32__)
+#include <Windows.h>
+#include <io.h>
+#include <fcntl.h>
+/**
+ * this is a hacky fix for stdout not working in windows gui apps
+*/
+static void fixStdout() {
+    static bool fixed = false;
+    if (fixed) return;
+	DWORD ret = AttachConsole(-1);
+	if (ret != 0) {
+		HANDLE lStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+		int hConHandle = _open_osfhandle((intptr_t)lStdHandle, 0);
+		FILE* fp = _fdopen( hConHandle, "w" );
+		*stdout = *fp;
+	}
+    fixed = true;
+}
+#else
+static void fixStdout() {}
+#endif
+
 Application::Application() {
+    
+    fixStdout();
 
     // connect window resize signal to camera aspect ratio
     window.resized.connect([&](const Eigen::Vector2i &size) {
@@ -27,9 +51,6 @@ void Application::init() {
 }
 
 int Application::run(int argc, char **argv) {
-
-	// Initialize Google's logging library.
-	google::InitGoogleLogging(argv[0]);
 
     // set initial camera aspect ratio
     auto size = window.get_size();

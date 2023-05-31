@@ -15,7 +15,7 @@ class SkyboxPass : public Pass
 
     public:
 
-    SkyboxPass(const std::string& cubemapPath = "assets://skybox.png");
+    SkyboxPass(const std::string& cubemapPath = "assets://skybox.jpg");
 
     void execute(RenderingSystem &renderingSystem) override;
 };

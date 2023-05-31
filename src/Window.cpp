@@ -1,6 +1,5 @@
 #include "Window.hpp"
-
-#include <glog/logging.h>
+#include "Logging.hpp"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -17,7 +16,7 @@ static std::map<GLFWwindow *, Window *> window_map;
 
 static void error_callback(int error, const char *description)
 {
-    DLOG(ERROR) << "GLFW error " << error << " : " << description;
+    LOG(ERROR) << "GLFW error " << error << " : " << description;
 }
 
 static void resize_callback(GLFWwindow *window, int width, int height)
