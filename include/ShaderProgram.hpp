@@ -7,7 +7,11 @@
 enum class ShaderType
 {
     Vertex,
-    Fragment
+    Fragment,
+    TesselationControl, // aka Hull
+    TesselationEvaluation, // aka Domain
+    Geometry,
+    Compute
 };
 
 class ShaderProgram
@@ -27,6 +31,7 @@ public:
     };
 
     ShaderProgram(const std::vector<ShaderDefinition> &shaderDefinitions);
+    ShaderProgram(const std::string &vertex_shader, const std::string &fragment_shader);
     ~ShaderProgram();
 
     void use();

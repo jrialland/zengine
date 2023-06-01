@@ -15,6 +15,14 @@ static uint32_t get_gl_shader_type(ShaderType shaderType)
         return GL_VERTEX_SHADER;
     case ShaderType::Fragment:
         return GL_FRAGMENT_SHADER;
+    case ShaderType::Geometry:
+        return GL_GEOMETRY_SHADER;
+    case ShaderType::TesselationControl:
+        return GL_TESS_CONTROL_SHADER;
+    case ShaderType::TesselationEvaluation:
+        return GL_TESS_EVALUATION_SHADER;
+    case ShaderType::Compute:
+        return GL_COMPUTE_SHADER;
     }
     throw std::runtime_error("unknown shader type");
 }
@@ -27,6 +35,14 @@ static std::string get_shader_type_str(ShaderType shaderType)
         return "Vertex";
     case ShaderType::Fragment:
         return "Fragment";
+    case ShaderType::Geometry:
+        return "Geometry";
+    case ShaderType::TesselationControl:
+        return "TesselationControl";
+    case ShaderType::TesselationEvaluation:
+        return "TesselationEvaluation";
+    case ShaderType::Compute:
+        return "Compute";
     }
     throw std::runtime_error("unknown shader type");
 }
@@ -100,6 +116,10 @@ ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefiniti
         glDetachShader(id, shaderId);
         glDeleteShader(shaderId);
     }
+}
+
+ShaderProgram::ShaderProgram(const std::string &vertex_shader, const std::string &fragment_shader) : ShaderProgram({{ShaderType::Vertex, vertex_shader}, {ShaderType::Fragment, fragment_shader}})
+{
 }
 
 int32_t ShaderProgram::get_uniform_location(const std::string &name)

@@ -2,7 +2,7 @@
 
 #include "RenderingSystem.hpp"
 #include "ShaderProgram.hpp"
-#include "Texture.hpp"
+#include "Cubemap.hpp"
 
 #include <string>
 #include <memory>
