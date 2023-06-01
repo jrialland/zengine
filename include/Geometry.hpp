@@ -31,9 +31,9 @@ struct GeometryBuilder {
     int add_vertex(const Eigen::Vector3d& vertex);
 };
 
-const Eigen::Vector3d X_AXIS;
-const Eigen::Vector3d Y_AXIS;
-const Eigen::Vector3d Z_AXIS;
+extern const Eigen::Vector3d X_AXIS;
+extern const Eigen::Vector3d Y_AXIS;
+extern const Eigen::Vector3d Z_AXIS;
 
 namespace basegeometries {
 

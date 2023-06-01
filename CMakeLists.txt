@@ -3,12 +3,22 @@ project(zengine)
 set(CMAKE_CXX_STANDARD 20)
 
 ################################################################################
+# libraries installed by vcpkg are visible by all targets
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
+#link_directories(${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib)
+
+################################################################################
 # project dependencies, see vcpkg settings
 find_package(Threads REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
+
+# vcpkg does not provide a classic cmake config file, so we need to use find_path and find_library
+find_path(CAIRO_INCLUDE_DIRS cairo/cairo.h)
+find_library(CAIRO_LIBRARIES cairo)
 
 ################################################################################
 # windows specific settings
@@ -37,9 +47,6 @@ FetchContent_MakeAvailable(
     stb
 )
 
-################################################################################
-# libraries installed by vcpkg are visible by all targets
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include)
 
 ################################################################################
 # build zengine library
@@ -53,6 +60,8 @@ target_link_libraries(zengine PRIVATE
     OpenGL::GL
     GLEW::GLEW
     glfw
+    Freetype::Freetype
+    ${CAIRO_LIBRARIES}
 )
 if(WIN32)
   target_link_libraries(zengine PRIVATE wsock32 ws2_32)

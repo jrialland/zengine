@@ -25,7 +25,7 @@ void Geometry::transform(const Eigen::Matrix4d &transform)
 {
     for (auto &vertex : vertices)
     {
-        vertex = transform * vertex;
+        vertex = (transform * vertex.homogeneous()).hnormalized();
     }
 }
 
@@ -91,7 +91,7 @@ void Geometry::to_obj(std::ostream &out, bool with_normals)
     {
         out << "v " << vertex.x() << " " << vertex.y() << " " << vertex.z() << std::endl;
     }
-    if (normals)
+    if (with_normals)
     {
         recompute_normals();
     }
@@ -115,9 +115,8 @@ int GeometryBuilder::add_vertex(const Eigen::Vector3d &vertex)
     }
     else
     {
-        int index = vertices.size();
-        vertexMap[key] = {index, vertex};
-        vertices.push_back(vertex);
+        uint32_t index = vertexMap.size();
+        vertexMap[key] = VertexAndIndex{vertex, index};
         return index;
     }
 }
@@ -137,7 +136,8 @@ Geometry GeometryBuilder::build()
     {
         vertices.push_back(pair.second.vertex);
     }
-    assert(indices.size() % 3 == 0) return {vertices, indices};
+    assert(indices.size() % 3 == 0);
+    return {vertices, indices};
 }
 
 const Eigen::Vector3d X_AXIS(1, 0, 0);
@@ -185,7 +185,8 @@ namespace basegeometries
             return triangle(
                 {1, 0, 0},
                 {cos(M_PI_2 / 3), sin(M_PI_2 / 3), 0},
-                {cos(2 * M_PI_2 / 3), sin(2 * M_PI_2 / 3), 0})
+                {cos(2 * M_PI_2 / 3), sin(2 * M_PI_2 / 3), 0}
+            );
         }
         else if (n == 4)
         {
@@ -193,7 +194,8 @@ namespace basegeometries
                 {1, 0, 0},
                 {cos(M_PI_2 / 2), sin(M_PI_2 / 2), 0},
                 {cos(M_PI_2), sin(M_PI_2), 0},
-                {cos(3 * M_PI_2 / 2), sin(3 * M_PI_2 / 2), 0});
+                {cos(3 * M_PI_2 / 2), sin(3 * M_PI_2 / 2), 0}
+            );
         }
         else
         {

@@ -6,9 +6,14 @@
 
 #include <dlfcn.h>
 
-//#include "minizip-ng/mz_zip.h"
+// #include "minizip-ng/mz_zip.h"
 
 namespace fs = std::filesystem;
+
+void FsEntry::write(const Blob &blob)
+{
+    write(blob.get_ptr(), blob.get_size());
+}
 
 class DiskFsEntry : public FsEntry
 {
@@ -57,14 +62,14 @@ public:
         return result;
     }
 
-    void write(const Blob &blob) override
+    void write(const void *data, size_t size) override
     {
         std::ofstream file(path.string().c_str(), std::ios::binary);
         if (!file)
         {
             throw std::runtime_error("Failed to open file '" + path.string() + "' for writing");
         }
-        file.write(reinterpret_cast<const char *>(blob.get_ptr()), blob.get_size());
+        file.write(reinterpret_cast<const char *>(data), size);
     }
 
     virtual bool is_readonly() override
@@ -141,7 +146,7 @@ public:
         return Blob(resolved, size);
     }
 
-    void write(const Blob &blob) override
+    void write(const void* data, size_t size) override
     {
         throw std::runtime_error("read-only");
     }
@@ -199,6 +204,7 @@ std::shared_ptr<FsEntry> FileSystem::get_entry(const std::string &uri)
     throw std::runtime_error("Unsupported URI scheme");
 }
 
-bool FileSystem::is_filesystem_uri(const std::string& uri) {
+bool FileSystem::is_filesystem_uri(const std::string &uri)
+{
     return uri.starts_with("file://") || uri.starts_with("symbol://") || uri.starts_with("assets://") || uri.starts_with("tmp://");
 }

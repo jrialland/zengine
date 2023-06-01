@@ -23,3 +23,29 @@ inline Eigen::Vector3f sphericalToCartesian(const Eigen::Vector3f &rtp) {
     float z = rtp.x() * cos(rtp.y());
     return Eigen::Vector3f(x, y, z);
 }
+
+inline float clamp(float x, float min, float max) {
+    return x < min ? min : (x > max ? max : x);
+}
+
+inline float lerp(float a, float b, float t) {
+    return a + (b - a) * t;
+}
+
+inline float step(float edge, float x) {
+    return x < edge ? 0.0f : 1.0f;
+}
+
+inline float smoothstep(float a, float b, float t) {
+    t = clamp((t - a) / (b - a), 0.0f, 1.0f);
+    return t * t * (3.0f - 2.0f * t);
+}
+
+inline float smootherstep(float a, float b, float t) {
+    t = clamp((t - a) / (b - a), 0.0f, 1.0f);
+    return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
+}
+
+inline float mix(float a, float b, float t) {
+    return a * (1.0f - t) + b * t;
+}

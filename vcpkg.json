@@ -1,16 +1,26 @@
 {
 	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-	"name" : "zengine",
+	"name": "zengine",
 	"version": "1.0.0",
 	"description": [
 		"my take at 3d stuff"
 	],
-	"dependencies" : [
+	"dependencies": [
 		"fmt",
 		"eigen3",
 		"opengl",
 		"glew",
 		"glfw3",
-		{"name": "dlfcn-win32", "platform" : "windows" }
+		"freetype",
+		{
+			"name": "cairo",
+			"features": [
+				"freetype"
+			]
+		},
+		{
+			"name": "dlfcn-win32",
+			"platform": "windows"
+		}
 	]
 }
