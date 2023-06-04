@@ -24,6 +24,8 @@ static void resize_callback(GLFWwindow *window, int width, int height)
     auto it = window_map.find(window);
     if (it != window_map.end())
     {
+        glViewport(0, 0, width, height);
+        glScissor(0, 0, width, height);
         Eigen::Vector2i size(width, height);
         it->second->resized(size);
     }

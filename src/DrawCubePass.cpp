@@ -5,8 +5,7 @@
 DrawCubePass::DrawCubePass()
 {
 
-    // just a red cube
-    auto program = std::make_shared<ShaderProgram>(
+    vao.set_program(
         R"(
         #version 460 core
         layout(location = 0) in vec3 position;
@@ -25,20 +24,8 @@ DrawCubePass::DrawCubePass()
 
     Geometry cube = basegeometries::cube();
 
-    std::vector<Eigen::Vector3f> vertices;
-    for(auto& v : cube.vertices)
-    {
-        vertices.emplace_back(v.x(), v.y(), v.z()); // TODO wtf converting doubles to floats !?
-    }
-
-    vertexBuffer = std::make_shared<VertexBuffer>(vertices);
-    elementBuffer = std::make_shared<VertexBuffer>(cube.indices);
-
-    vao.set_shader_program(program);       // TODO maybe add a shortcut method to directly assign shader code
-    vao.set_buffer(0, "v3", vertexBuffer); // TODO maybe add a shortcut method to directly assign vertex data, and maybe add a shortcut method to directly assign index data
-    vao.set_ebo(elementBuffer);
-
-    // TODO maybe the vao could maintain a list of all the buffers it uses so that we should not have to keep them alive here
+    vao.bind_buffer(0, cube.vertices);
+    vao.set_ebo(cube.indices);
 }
 
 

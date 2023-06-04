@@ -8,11 +8,11 @@
 
 struct VertexStructure
 {
-    unsigned int offset=0; // the offset between the beginning of the data and the beginning of this attribute
-    unsigned int size=0;   // the size of The used attribute in bytes
-    unsigned int components_count=0;  // the number of elements in this attribute
-    unsigned int gl_type=0; // the type of the attribute in opengl
-    unsigned int stride=0; // the size of the entire vertex in bytes
+    unsigned int offset = 0;           // the offset between the beginning of the data and the beginning of this attribute ex. "(m4) f3" -> offset=64
+    unsigned int size = 0;             // the size of The used attributes in bytes, ex. "(f3) f3" -> stride=24 but size=12
+    unsigned int components_count = 0; // the number of elements in this attribute, ex. "(i) f f f[2]" -> components_count=4
+    unsigned int gl_type = 0;          // the type of the attribute in opengl, ex. "m4" -> gl_type=GL_FLOAT
+    unsigned int stride = 0;           // the size of the entire vertex in bytes ex. "(f3) f3 (f3)" -> stride 36
 
     /* a small dsl that helps defining the format of a vertex buffer.
      * the format is made of space separated attributes
@@ -55,37 +55,30 @@ class VertexBuffer
 {
 private:
     unsigned int id;
+    bool ebo = false;
     unsigned int size; // in bytes
-    std::string format;
     friend class VertexArray;
+
 public:
     VertexBuffer();
-    VertexBuffer(const void *data, unsigned int size, const std::string &format = "f");
+    VertexBuffer(const void *data, unsigned int size);
     VertexBuffer(const std::vector<Eigen::Vector3f> &data);
     VertexBuffer(const std::vector<uint32_t> &data);
+    VertexBuffer(const std::vector<float> &data);
     VertexBuffer(const VertexBuffer &buffer) = delete;
     VertexBuffer(VertexBuffer &&buffer);
     ~VertexBuffer();
 
-    void set_data(const void *data, unsigned int size, const std::string &format = "f");
+    void set_data(const void *data, unsigned int size);
+
+    template<typename T>
+    void set_data(const std::vector<T> &vec) {
+        set_data(vec.data(), vec.size() * sizeof(T));
+    }
 
     /**
      * the size of the buffer in bytes
-    */
+     */
     unsigned int get_size() const;
 
-    /**
-     * the format of the buffer, in the same format as VertexStructure::parse_format
-    */
-    std::string get_format() const;
-
-    /*
-     * the size of a single vertex in bytes 
-    */
-    size_t component_size() const;
-
-    /*
-     * the number of vertices in the buffer, (computed as size / component_size())
-    */
-    size_t count() const;
 };

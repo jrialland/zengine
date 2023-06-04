@@ -43,8 +43,9 @@ VertexStructure VertexStructure::parse_format(const std::string &format_)
     auto paren = format.find('(');
     if (paren != std::string::npos)
     {
-        format = format.substr(0, paren);
         end = format.substr(paren + 1);
+        format = strutil::trim(format.substr(0, paren));
+
         auto close_paren = end.find(')');
         assert(close_paren != std::string::npos);
         end = strutil::trim(end.substr(0, close_paren));
@@ -161,59 +162,45 @@ VertexBuffer::VertexBuffer()
     glGenBuffers(1, &id);
 }
 
-VertexBuffer::VertexBuffer(const void *data, unsigned int size, const std::string &format) : VertexBuffer()
+VertexBuffer::VertexBuffer(const void *data, unsigned int size) : VertexBuffer()
 {
-    set_data(data, size, format);
+    set_data(data, size);
+}
+
+VertexBuffer::VertexBuffer(const std::vector<float> &data) : VertexBuffer() {
+    set_data(data);
 }
 
 VertexBuffer::VertexBuffer(const std::vector<Eigen::Vector3f> &data) : VertexBuffer()
 {
-    set_data(data.data(), data.size() * sizeof(Eigen::Vector3f), "3f");
+    set_data(data);
 }
 
 VertexBuffer::VertexBuffer(const std::vector<uint32_t> &data) : VertexBuffer()
 {
-    set_data(data.data(), data.size() * sizeof(uint32_t), "u");
+    set_data(data);
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer &&buffer)
 {
+    id = buffer.id;
+    size = buffer.size;
+    buffer.id = 0;
 }
+
 VertexBuffer::~VertexBuffer()
 {
     glDeleteBuffers(1, &id);
 }
 
-void VertexBuffer::set_data(const void *data, unsigned int size, const std::string &format)
+void VertexBuffer::set_data(const void *data, unsigned int size)
 {
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-    this->format = format;
     this->size = size;
 }
 
 unsigned int VertexBuffer::get_size() const
 {
     return size;
-}
-
-std::string VertexBuffer::get_format() const
-{
-    return format;
-}
-
-/*
- * the size of a single vertex in bytes
- */
-size_t VertexBuffer::component_size() const
-{
-    return VertexStructure::parse_format(format).stride;
-}
-
-/*
- * the number of vertices in the buffer, (computed as size / component_size())
- */
-size_t VertexBuffer::count() const
-{
-    return size / component_size();
 }

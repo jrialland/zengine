@@ -1,6 +1,9 @@
 #pragma once
+
 #include <string>
 #include <sstream>
+
+#include <fmt/core.h>
 
 struct LogLine {
     std::ostringstream stream;

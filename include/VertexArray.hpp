@@ -11,10 +11,10 @@ class VertexArray
 {
     private:
         uint32_t id;
+        uint32_t ebo_id = 0;
         std::shared_ptr<ShaderProgram> shader_program;
         std::map<int, std::shared_ptr<VertexBuffer>> buffers;
-        size_t count = -1; // the number of vertices, coming from the first buffer or the ebo if present
-        bool use_ebo = false;
+        size_t count = -1; // the number of vertices, computed from the buffers of the ebo if there is one
         bool instanced = false;
     public:
 
@@ -22,7 +22,9 @@ class VertexArray
     VertexArray(std::shared_ptr<ShaderProgram> shader_program);
     ~VertexArray();
 
-    void set_shader_program(std::shared_ptr<ShaderProgram> shader_program);
+    void set_program(std::shared_ptr<ShaderProgram> shader_program);
+
+    void set_program(const std::string &vertex_shader, const std::string &fragment_shader);
 
     /**
      * Note : this class maintains a map to the buffers it uses, so it will not be destroyed until the VertexArray is destroyed if necessary.
@@ -39,10 +41,14 @@ class VertexArray
      * 
      *  in order to preserve my sanity, I forbid the use of a divisor for the first buffer.
      */
-    void set_buffer(int location, const std::string &format, std::shared_ptr<VertexBuffer> buffer, int divisor=0);
+    void bind_buffer(int location, const std::string &format, std::shared_ptr<VertexBuffer> buffer, int divisor=0);
 
-    void set_ebo(std::shared_ptr<VertexBuffer> buffer);
+    void bind_buffer(int location, const std::string &format, const std::vector<float> &buffer);
+    void bind_buffer(int location, const std::vector<Eigen::Vector3f> &buffer);
 
+    void unbind_buffer(int location);
+
+    void set_ebo(const std::vector<uint32_t> &indices);
     std::shared_ptr<ShaderProgram> get_shader_program();
 
     size_t get_count() const;
