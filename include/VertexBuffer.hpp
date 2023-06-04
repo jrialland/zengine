@@ -9,8 +9,9 @@
 struct VertexStructure
 {
     unsigned int offset=0; // the offset between the beginning of the data and the beginning of this attribute
-    unsigned int size=0;   // the size of this attribute in bytes
-    unsigned int count=0;  // the number of elements in this attribute
+    unsigned int size=0;   // the size of The used attribute in bytes
+    unsigned int components_count=0;  // the number of elements in this attribute
+    unsigned int gl_type=0; // the type of the attribute in opengl
     unsigned int stride=0; // the size of the entire vertex in bytes
 
     /* a small dsl that helps defining the format of a vertex buffer.

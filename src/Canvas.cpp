@@ -6,15 +6,23 @@
 #include <cairo/cairo.h>
 #include <cairo/cairo-ft.h>
 
-static FT_Library ft_library = nullptr;
-
-static void ensure_ft_library()
+struct FreeTypeStatic
 {
-    if (ft_library == nullptr)
+    FT_Library library;
+    FreeTypeStatic()
     {
-        FT_Init_FreeType(&ft_library);
+        if(FT_Init_FreeType(&library) != FT_Err_Ok)
+        {
+            throw std::runtime_error("Failed to initialize FreeType");
+        }
     }
-}
+    ~FreeTypeStatic()
+    {
+        FT_Done_FreeType(library);
+    }
+};
+
+static FreeTypeStatic ft;
 
 Canvas::Canvas(int width, int height, const Eigen::Vector4f &color)
 {
@@ -96,13 +104,12 @@ void Canvas::stroke_color(uint32_t color)
 
 void Canvas::font(const std::string &font, int size)
 {
-    ensure_ft_library();
     if (font_face != nullptr)
     {
         cairo_font_face_destroy(font_face);
     }
     FT_Face ft_face;
-    if (FT_New_Face(ft_library, font.c_str(), 0, &ft_face))
+    if (FT_New_Face(ft.library, font.c_str(), 0, &ft_face))
     {
         throw std::runtime_error("Failed to load font '" + font + "'");
     }
@@ -145,7 +152,6 @@ void Canvas::triangle(int x0, int y0, int x1, int y1, int x2, int y2)
 
 void Canvas::text(int x, int y, const std::string &text)
 {
-    ensure_ft_library();
     if (font_face == nullptr)
     {
         font("Arial", 12);
@@ -256,7 +262,6 @@ void Canvas::dump(int channels, std::function<void(void *chunk, int offset, int 
 
 Eigen::Vector2i Canvas::measure_text(const std::string &text)
 {
-    ensure_ft_library();
     if (font_face == nullptr)
     {
         font("Arial", 12);

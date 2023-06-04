@@ -58,41 +58,59 @@ VertexStructure VertexStructure::parse_format(const std::string &format_)
         {
         case 'f':
             vs.size += 4 * attr_multiplier;
+            vs.components_count += attr_multiplier;
+            vs.gl_type = GL_FLOAT;
             break;
         case 'i':
+            vs.size += 4 * attr_multiplier;
+            vs.components_count += attr_multiplier;
+            vs.gl_type = GL_INT;
+            break;
         case 'u':
             vs.size += 4 * attr_multiplier;
+            vs.components_count += attr_multiplier;
+            vs.gl_type = GL_UNSIGNED_INT;
             break;
         case 'b':
             vs.size += 1 * attr_multiplier;
+            vs.components_count += attr_multiplier;
+            vs.gl_type = GL_UNSIGNED_BYTE;
             break;
         case 'v':
+            vs.gl_type = GL_FLOAT;
             switch (attr_name[1])
             {
             case '2':
                 vs.size += 4 * 2 * attr_multiplier;
+                vs.components_count += attr_multiplier * 2;
                 break;
             case '3':
                 vs.size += 4 * 3 * attr_multiplier;
+                vs.components_count += attr_multiplier * 3;
                 break;
             case '4':
                 vs.size += 4 * 4 * attr_multiplier;
+                vs.components_count += attr_multiplier * 4;
                 break;
             default:
                 assert(false && "Invalid vector size (tip: use f[xx] for vectors > 4)");
             }
             break;
         case 'm':
+            vs.gl_type = GL_FLOAT;
             switch (attr_name[1])
             {
             case '2':
                 vs.size += 4 * 2 * 2 * attr_multiplier;
+                vs.components_count += attr_multiplier * 4;
                 break;
             case '3':
                 vs.size += 4 * 3 * 3 * attr_multiplier;
+                vs.components_count += attr_multiplier * 9;
                 break;
             case '4':
                 vs.size += 4 * 4 * 4 * attr_multiplier;
+                vs.components_count += attr_multiplier * 16;
                 break;
             default:
                 assert(false && "Invalid matrix size (tip: use f[xx] for matrices > 4x4)");
@@ -101,7 +119,6 @@ VertexStructure VertexStructure::parse_format(const std::string &format_)
         default:
             assert(false && "Invalid attribute type");
         }
-        vs.count += 1;
     }
 
     vs.stride += vs.size;
@@ -117,7 +134,7 @@ VertexStructure VertexStructure::parse_format(const std::string &format_)
 
 bool VertexStructure::operator==(const VertexStructure &other) const
 {
-    return offset == other.offset && size == other.size && count == other.count && stride == other.stride;
+    return offset == other.offset && size == other.size && components_count == other.components_count && stride == other.stride && gl_type == other.gl_type;
 }
 
 bool VertexStructure::operator!=(const VertexStructure &other) const
@@ -125,7 +142,7 @@ bool VertexStructure::operator!=(const VertexStructure &other) const
     return !(*this == other);
 }
 
-std::ostream& operator<<(std::ostream &os, const VertexStructure &vs)
+std::ostream &operator<<(std::ostream &os, const VertexStructure &vs)
 {
     os << std::to_string(vs);
     return os;
@@ -135,7 +152,7 @@ namespace std
 {
     string to_string(const VertexStructure &vs)
     {
-        return "VertexStructure(offset=" + std::to_string(vs.offset) + ", size=" + std::to_string(vs.size) + ", count=" + std::to_string(vs.count) + ", stride=" + std::to_string(vs.stride) + ")";
+        return "VertexStructure(offset=" + std::to_string(vs.offset) + ", size=" + std::to_string(vs.size) + ", components_count=" + std::to_string(vs.components_count) + ", stride=" + std::to_string(vs.stride) + ", gl_type=" + std::to_string(vs.gl_type) + ")";
     }
 }
 

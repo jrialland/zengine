@@ -1,44 +1,67 @@
+#include <string>
 #include <vector>
-#include <Eigen/Dense>
 #include <map>
+#include <set>
 #include <iostream>
+#include <functional>
+#include <utility>
+#include <Eigen/Dense>
+
 struct Geometry {
-    std::vector<Eigen::Vector3d> vertices;
+    std::vector<Eigen::Vector3f> vertices;
     std::vector<uint32_t> indices;
-    std::vector<Eigen::Vector3d> normals;
+    std::vector<Eigen::Vector3f> normals;
     void recompute_normals();
-    void transform(const Eigen::Matrix4d& transform);
-    void translate(const Eigen::Vector3d& translation);
-    void scale(const Eigen::Vector3d& scale);
-    void rotate(const Eigen::Vector3d& axis, double angle);
-    void rotate(const Eigen::Matrix3d& rotation);
+    void transform(const Eigen::Matrix4f& transform);
+    void translate(const Eigen::Vector3f& translation);
+    void scale(const Eigen::Vector3f& scale);
+    void rotate(const Eigen::Vector3f& axis, double angle);
+    void rotate(const Eigen::Matrix3f& rotation);
     void merge(const Geometry& other);
-    Geometry transformed(const Eigen::Matrix4d& transform) const;
+    Geometry transformed(const Eigen::Matrix4f& transform) const;
     Geometry copy() const;
-    void to_obj(std::ostream& out, bool with_normals = false);
+    void to_obj(std::ostream& out, const std::string& name="", bool with_normals = false);
+    void for_each_triangle(std::function<void(const Eigen::Vector3f&, const Eigen::Vector3f&, const Eigen::Vector3f&)> callback) const;
+    void for_each_triangle(std::function<void(Eigen::Vector3f&, Eigen::Vector3f&, Eigen::Vector3f&)> callback);
+    Eigen::Vector3f get_centroid() const;
 };
 
 struct GeometryBuilder {
     struct VertexAndIndex {
-        Eigen::Vector3d vertex;
+        Eigen::Vector3f vertex;
         uint32_t index;
     };
+    struct TriangleIndices {
+        uint32_t a;
+        uint32_t b;
+        uint32_t c;
+        bool operator<(const TriangleIndices& other) const;
+    };
     std::map<std::string, VertexAndIndex> vertexMap;
-    std::vector<uint32_t> indices;
+    std::set<TriangleIndices> triangles;
+    void add_triangle(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c);
     void add_geometry(const Geometry& geometry);
     Geometry build();
     private:
-    int add_vertex(const Eigen::Vector3d& vertex);
+
+    uint32_t get_index(const Eigen::Vector3f& vertex);
 };
 
-extern const Eigen::Vector3d X_AXIS;
-extern const Eigen::Vector3d Y_AXIS;
-extern const Eigen::Vector3d Z_AXIS;
+extern const Eigen::Vector3f X_AXIS;
+extern const Eigen::Vector3f Y_AXIS;
+extern const Eigen::Vector3f Z_AXIS;
+
+namespace geometryops {
+    /**
+     * @brief Extrudes a polygon along a direction
+    */
+    Geometry extrude(const Geometry& base, const Eigen::Vector3f &direction);
+}
 
 namespace basegeometries {
 
-    Geometry triangle(const Eigen::Vector3d& a, const Eigen::Vector3d& b, const Eigen::Vector3d& c);
-    Geometry quad(const Eigen::Vector3d& a, const Eigen::Vector3d& b, const Eigen::Vector3d& c, const Eigen::Vector3d& d);
+    Geometry triangle(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c);
+    Geometry quad(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c, const Eigen::Vector3f& d);
 
     /*
     * returns a cube of size 1 centered at the origin

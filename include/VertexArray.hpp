@@ -12,6 +12,7 @@ class VertexArray
     private:
         uint32_t id;
         std::shared_ptr<ShaderProgram> shader_program;
+        std::map<int, std::shared_ptr<VertexBuffer>> buffers;
         size_t count = -1; // the number of vertices, coming from the first buffer or the ebo if present
         bool use_ebo = false;
         bool instanced = false;
@@ -24,13 +25,10 @@ class VertexArray
     void set_shader_program(std::shared_ptr<ShaderProgram> shader_program);
 
     /**
+     * Note : this class maintains a map to the buffers it uses, so it will not be destroyed until the VertexArray is destroyed if necessary.
+     * 
      * @brief set the buffer at the given location
-     * 
-     * Please note that the VertexArray does not own the buffer, so it must be kept alive by the caller !
-     * if the buffer is destroyed, the VertexArray will still try to use it, which will lead to a crash.
-     * 
-     * Also note that if data in the buffer is modified, the VertexArray is updated accordingly, that's the way opengl works.
-     * 
+     *  
      * @param location the location of the attribute in the shader
      * @param format the format of the attribute, as described in VertexStructure::parse_format
      * @param buffer the buffer to bind

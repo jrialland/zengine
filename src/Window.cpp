@@ -72,6 +72,14 @@ Window::Window(const std::string &title, int width, int height, bool fullscreen)
         {
             glew_inited = true;
         }
+
+        // opgenl debug output
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
+            LOG(INFO) << "OpenGL debug message : " << message;
+        }, nullptr);
+
+
     }
 
     // set up callbacks
@@ -80,6 +88,7 @@ Window::Window(const std::string &title, int width, int height, bool fullscreen)
 
 Window::~Window()
 {
+    glfwSetFramebufferSizeCallback((GLFWwindow *)handle, nullptr);
     glfwDestroyWindow((GLFWwindow *)handle);
     window_map.erase((GLFWwindow *)handle);
     if (window_map.empty())

@@ -48,9 +48,12 @@ void VertexArray::set_buffer(int location, const std::string &format, std::share
     // note : as we have sizes in bytes, we use GL_BYTE as the type even for floats
     // note : the pointer parameter is the offset in bytes from the beginning of the buffer, and not a real pointer
 
-    void* offset = reinterpret_cast<void*>((uint64_t)vs.offset); // opengl is an old api made with 32 bits in mind, so we have to cast to uint64_t to avoid warnings
+    
 
-    glVertexAttribPointer(location, vs.size, GL_BYTE, GL_FALSE, vs.stride, offset);
+
+    void* pOffset = reinterpret_cast<void*>((uint64_t)vs.offset); // opengl is an old api made with 32 bits in mind, so we have to cast to uint64_t to avoid warnings
+
+    glVertexAttribPointer(location, vs.components_count, vs.gl_type, GL_FALSE, vs.stride, pOffset);
 
     // a value of 0 means that the attribute is not instanced
     instanced = divisor != 0;
@@ -65,6 +68,8 @@ void VertexArray::set_buffer(int location, const std::string &format, std::share
     } else {
         assert(count == buffer->count() * (divisor == 0 ? 1 : divisor) && "all buffers must have the same count");
     }
+
+    buffers[location] = buffer;
 }
 
 void VertexArray::set_ebo(std::shared_ptr<VertexBuffer> buffer)
@@ -73,6 +78,7 @@ void VertexArray::set_ebo(std::shared_ptr<VertexBuffer> buffer)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->id); // bind the ebo to the vao
     use_ebo = true;
     count = buffer->count(); // always override what we may have computed when setting the buffers
+    buffers[-1] = buffer; // -1 is a special location for the ebo
 }
 
 size_t VertexArray::get_count() const

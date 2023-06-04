@@ -116,6 +116,22 @@ ShaderProgram::ShaderProgram(const std::vector<ShaderDefinition> &shaderDefiniti
         glDetachShader(id, shaderId);
         glDeleteShader(shaderId);
     }
+
+    // count uniforms
+    int32_t uniformCount;
+    glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &uniformCount);
+
+    // get uniform names and locations ans store them in a map, will speed up uniform setting
+    for (int32_t i = 0; i < uniformCount; i++)
+    {
+        char name[256];
+        int32_t length;
+        int32_t size;
+        uint32_t type;
+        glGetActiveUniform(id, i, 256, &length, &size, &type, name);
+        uniformLocations[name] = glGetUniformLocation(id, name);
+    }
+
 }
 
 ShaderProgram::ShaderProgram(const std::string &vertex_shader, const std::string &fragment_shader) : ShaderProgram({{ShaderType::Vertex, vertex_shader}, {ShaderType::Fragment, fragment_shader}})

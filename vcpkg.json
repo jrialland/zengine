@@ -6,6 +6,7 @@
 		"my take at 3d stuff"
 	],
 	"dependencies": [
+		"catch2",
 		"fmt",
 		"eigen3",
 		"opengl",
