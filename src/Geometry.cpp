@@ -237,12 +237,12 @@ namespace basegeometries
 
     Geometry triangle(const Eigen::Vector3f &a, const Eigen::Vector3f &b, const Eigen::Vector3f &c)
     {
-        return Geometry({a, b, c}, {0, 1, 2});
+        return Geometry{{a, b, c}, {0, 1, 2}};
     }
 
     Geometry quad(const Eigen::Vector3f &a, const Eigen::Vector3f &b, const Eigen::Vector3f &c, const Eigen::Vector3f &d)
     {
-        return Geometry({a, b, c, d}, {0, 1, 2, 2, 3, 0});
+        return Geometry{{a, b, c, d}, {0, 1, 2, 2, 3, 0}};
     }
 
     Geometry cube()

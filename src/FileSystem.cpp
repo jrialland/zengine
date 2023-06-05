@@ -99,26 +99,32 @@ public:
             symbol = symbol.substr(0, comma);
         }
 
-        dlopen(nullptr, RTLD_NOW | RTLD_GLOBAL);
-        resolved = dlsym(RTLD_DEFAULT, symbol.c_str());
+        void* syms = dlopen(nullptr, RTLD_GLOBAL); // If file is a null pointer, dlopen() shall return a global symbol table handle for the currently running process image.
+        resolved = dlsym(syms, symbol.c_str());
         if (!resolved)
         {
-            dlclose(RTLD_DEFAULT);
+            if(syms != nullptr) {
+                dlclose(syms);
+            }
             throw std::runtime_error("Symbol not found");
         }
 
         if (size == 0)
         {
-            void *end = dlsym(RTLD_DEFAULT, (symbol + "_end").c_str());
+            void *end = dlsym(syms, (symbol + "_end").c_str());
             if (!end)
             {
-                dlclose(RTLD_DEFAULT);
+                if(syms != nullptr) {
+                    dlclose(syms);
+                }
                 throw std::runtime_error("Symbol not found");
             }
             size = reinterpret_cast<size_t>(end) - reinterpret_cast<size_t>(resolved);
         }
 
-        dlclose(RTLD_DEFAULT);
+        if(syms != nullptr) {
+            dlclose(syms);
+        }
     }
 
     bool exists() override

@@ -2,6 +2,7 @@
 #include "FileSystem.hpp"
 #include "stb_image.h"
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 
 #include <GL/glew.h>

@@ -1,6 +1,7 @@
 #include "Md5.hpp"
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 
 // md5 implementation, taken from https://github.com/Zunawe/md5-c and modified to fit my needs
 // see https://github.com/Zunawe/md5-c/blob/main/UNLICENSE
