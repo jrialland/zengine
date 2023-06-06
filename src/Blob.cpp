@@ -3,11 +3,11 @@
 #include <cstring>
 #include <stdexcept>
 
-Blob::Blob() : ptr(nullptr), size(0), owned(false)
+Blob::Blob() : ptr(nullptr), size(0), deleter([](void *) {})
 {
 }
 
-Blob::Blob(size_t size_) : size(size_), owned(true)
+Blob::Blob(size_t size_) : size(size_), deleter([](void *ptr) { free(ptr); })
 {
     ptr = malloc(size);
     if (ptr == nullptr)
@@ -16,7 +16,7 @@ Blob::Blob(size_t size_) : size(size_), owned(true)
     }
 }
 
-Blob::Blob(void *ptr_, size_t size_, bool owned_) : ptr(ptr_), size(size_), owned(owned_)
+Blob::Blob(void *ptr_, size_t size_, std::function<void(void *)> deleter_) : ptr(ptr_), size(size_), deleter(deleter_)
 {
 }
 
@@ -24,16 +24,16 @@ Blob::Blob(Blob &&other)
 {
     ptr = other.ptr;
     size = other.size;
-    owned = other.owned;
-    other.owned = false;
+    deleter = other.deleter;
+    other.deleter = [](void *) {};
 }
 
 Blob &Blob::operator=(Blob &&other)
 {
     ptr = other.ptr;
     size = other.size;
-    owned = other.owned;
-    other.owned = false;
+    deleter = other.deleter;
+    other.deleter = [](void *) {};
     return *this;
 }
 
@@ -45,10 +45,7 @@ Blob Blob::copy() const {
 
 Blob::~Blob()
 {
-    if (owned)
-    {
-        free(ptr);
-    }
+    deleter(ptr);
 }
 
 void *Blob::get_ptr() const
@@ -59,9 +56,4 @@ void *Blob::get_ptr() const
 size_t Blob::get_size() const
 {
     return size;
-}
-
-bool Blob::is_owned() const
-{
-    return owned;
 }

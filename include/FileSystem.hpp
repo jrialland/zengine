@@ -23,6 +23,6 @@ class FileSystem
 {
     public:
     static std::shared_ptr<FsEntry> get_entry(const std::string& uri);
-
     static bool is_filesystem_uri(const std::string& uri);
+    static std::string get_extension(const std::string& uri);
 };

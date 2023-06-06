@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <functional>
 
 class Blob
 {
@@ -9,14 +10,13 @@ class Blob
 private:
     void *ptr;
     size_t size;
-    bool owned;
-
+    std::function<void(void *)> deleter;
 public:
 
     Blob();
     Blob(size_t size);
 
-    Blob(void *ptr, size_t size, bool owned = false);
+    Blob(void *ptr, size_t size, std::function<void(void *)> deleter = [](void *) {});
 
     Blob(const Blob &other) = delete;
     Blob(Blob &&other);
@@ -32,8 +32,6 @@ public:
     void *get_ptr() const;
 
     size_t get_size() const;
-
-    bool is_owned() const;
 
     template <typename T>
     T as() const

@@ -214,3 +214,11 @@ bool FileSystem::is_filesystem_uri(const std::string &uri)
 {
     return uri.starts_with("file://") || uri.starts_with("symbol://") || uri.starts_with("assets://") || uri.starts_with("tmp://");
 }
+
+std::string FileSystem::get_extension(const std::string& uri) {
+    auto dot = uri.find_last_of('.');
+    if(dot == std::string::npos) {
+        return "";
+    }
+    return uri.substr(dot + 1);
+}

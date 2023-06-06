@@ -60,6 +60,16 @@ namespace strutil {
         return result;
     }
 
+    
+    std::string remove_all(const std::string& str, const std::string& remove) {
+        std::string result = str;
+        size_t start_pos = 0;
+        while ((start_pos = result.find(remove, start_pos)) != std::string::npos) {
+            result.erase(start_pos, remove.length());
+        }
+        return result;
+    }
+
     std::vector<std::string> split(const std::string& str, const std::string& delim) {
         std::vector<std::string> result;
         size_t start = 0;
