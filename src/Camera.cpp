@@ -30,16 +30,41 @@ void Camera::set_position(const Eigen::Vector3f &position_)
     position = position_;
 }
 
+void Camera::set_rotation(const Eigen::Vector3f euler_angles)
+{
+    auto rotation = Eigen::AngleAxisf(euler_angles.x(), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(euler_angles.y(), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(euler_angles.z(), Eigen::Vector3f::UnitZ());
+    direction = rotation * Eigen::Vector3f::UnitZ();
+    up = rotation * Eigen::Vector3f::UnitY();
+    right = rotation * Eigen::Vector3f::UnitX();
+}
+
+Eigen::Vector3f Camera::get_direction() const
+{
+    return direction;
+}
+
+Eigen::Vector3f Camera::get_up() const
+{
+    return up;
+}
+
+Eigen::Vector3f Camera::get_right() const
+{
+    return right;
+}
+
 void Camera::set_aspect(float aspectRatio_)
 {
     aspectRatio = aspectRatio_;
 }
 
-void Camera::set_aspect(int width, int height) {
+void Camera::set_aspect(int width, int height)
+{
     set_aspect(static_cast<float>(width) / static_cast<float>(height));
 }
 
-void Camera::set_aspect(const Eigen::Vector2i &size) {
+void Camera::set_aspect(const Eigen::Vector2i &size)
+{
     set_aspect(size.x(), size.y());
 }
 
@@ -75,8 +100,8 @@ void Camera::look_at(const Eigen::Vector3f &target)
         return;
     }
     direction = (target - position).normalized();
-    right = direction.cross(Eigen::Vector3f::UnitY()).normalized();
-    up = right.cross(direction).normalized();
+    right = direction.cross(Eigen::Vector3f::UnitY());
+    up = right.cross(direction);
 }
 
 void Camera::rotate(float roll, float pitch, float yaw)
@@ -90,7 +115,8 @@ void Camera::rotate(float roll, float pitch, float yaw)
     up = q * up;
 }
 
-Eigen::Matrix4f Camera::get_view() const {
+Eigen::Matrix4f Camera::get_view() const
+{
     Eigen::Matrix4f view;
     view.setZero();
     view(0, 0) = right.x();
@@ -107,6 +133,30 @@ Eigen::Matrix4f Camera::get_view() const {
     view(2, 3) = -direction.dot(position);
     view(3, 3) = 1;
     return view;
+}
+
+Eigen::Vector3f Camera::get_screen_center() const
+{
+    return position + direction * near;
+}
+
+Eigen::Vector3f Camera::get_screen_top_left() const
+{
+    return get_screen_center() + up * get_screen_height()/2 - right * get_screen_width()/2;
+}
+
+Eigen::Vector3f Camera::get_screen_top_right() const
+{
+    return get_screen_center() + up * get_screen_height()/2 + right * get_screen_width()/2;
+}
+Eigen::Vector3f Camera::get_screen_bottom_left() const
+{
+    return get_screen_center() - up * get_screen_height()/2 - right * get_screen_width()/2;
+}
+
+Eigen::Vector3f Camera::get_screen_bottom_right() const
+{
+    return get_screen_center() - up * get_screen_height()/2 + right * get_screen_width()/2;
 }
 
 PerspectiveCamera::PerspectiveCamera(float fov_, float aspectRatio, float near, float far) : fov(fov_)
@@ -138,20 +188,50 @@ Eigen::Matrix4f PerspectiveCamera::get_projection() const
     return projection;
 }
 
-OrthographicCamera::OrthographicCamera(float left_, float right_, float bottom_, float top_, float near, float far) : left(left_), right(right_), bottom(bottom_), top(top_) {
+float PerspectiveCamera::get_screen_width() const
+{
+    return 2 * tan(fov / 2) * near;
+}
+
+float PerspectiveCamera::get_screen_height() const
+{
+    return get_screen_width() / aspectRatio;
+}
+
+
+Ray PerspectiveCamera::get_ray(float u, float v) const
+{
+    auto top_left = get_screen_top_left();
+    auto target = top_left + right * get_screen_width() * u - up * get_screen_height() * v;
+    return Ray(position, (target - position).normalized());
+}
+
+OrthographicCamera::OrthographicCamera(float width_, float height, float near = 0.1f, float far = 1000.0f) : width(width_)
+{
+    aspectRatio = width / height;
+    direction = Eigen::Vector3f::UnitZ();
+    right = Eigen::Vector3f::UnitX();
+    up = Eigen::Vector3f::UnitY();
     set_near(near);
     set_far(far);
 }
 
-Eigen::Matrix4f OrthographicCamera::get_projection() const{
+Eigen::Matrix4f OrthographicCamera::get_projection() const
+{
     Eigen::Matrix4f projection;
     projection.setZero();
-    projection(0, 0) = 2 / (right - left);
-    projection(1, 1) = 2 / (top - bottom);
+    projection(0, 0) = 1 / (width / aspectRatio);
+    projection(1, 1) = 1 / width;
     projection(2, 2) = -2 / (far - near);
-    projection(0, 3) = -(right + left) / (right - left);
-    projection(1, 3) = -(top + bottom) / (top - bottom);
     projection(2, 3) = -(far + near) / (far - near);
     projection(3, 3) = 1;
     return projection;
+}
+
+float OrthographicCamera::get_screen_width() const {
+    return width;
+}
+
+float OrthographicCamera::get_screen_height() const {
+    return width / aspectRatio;
 }

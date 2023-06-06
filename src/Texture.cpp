@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <cassert>
+#include <cstring>
 
 Texture::Texture(const std::string& path) {
 

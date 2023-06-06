@@ -7,6 +7,8 @@
 #include <utility>
 #include <Eigen/Dense>
 
+#include "Ray.hpp"
+
 struct Geometry {
     std::vector<Eigen::Vector3f> vertices;
     std::vector<uint32_t> indices;
@@ -21,9 +23,22 @@ struct Geometry {
     Geometry transformed(const Eigen::Matrix4f& transform) const;
     Geometry copy() const;
     void to_obj(std::ostream& out, const std::string& name="", bool with_normals = false);
-    void for_each_triangle(std::function<void(const Eigen::Vector3f&, const Eigen::Vector3f&, const Eigen::Vector3f&)> callback) const;
-    void for_each_triangle(std::function<void(Eigen::Vector3f&, Eigen::Vector3f&, Eigen::Vector3f&)> callback);
+    void for_each_triangle(std::function<bool(const Eigen::Vector3f&, const Eigen::Vector3f&, const Eigen::Vector3f&)> callback) const;
+    void for_each_triangle(std::function<bool(Eigen::Vector3f&, Eigen::Vector3f&, Eigen::Vector3f&)> callback);
     Eigen::Vector3f get_centroid() const;
+
+    /**
+     * @brief check if a ray hits the geometry
+     * 
+     * This method checks for every triangles in a way that is not very efficient, so it is for validating the correctness of geometries only.
+     * 
+     * @param ray casted ray
+     * @param t the distance from the ray origin to the hit point, set to -1 if no hit
+     * @param normal the normal of the hit point, set to (0, 0, 0) if no hit
+     * @return true as long as the ray hits the geometry
+     * @return false otherwise
+     */
+    bool hit(const Ray& ray, float &t, Eigen::Vector3f &normal) const;
 };
 
 struct GeometryBuilder {

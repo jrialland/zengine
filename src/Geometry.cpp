@@ -119,21 +119,27 @@ void Geometry::to_obj(std::ostream &out, const std::string &name, bool with_norm
     }
 }
 
-void Geometry::for_each_triangle(std::function<void(const Eigen::Vector3f &, const Eigen::Vector3f &, const Eigen::Vector3f &)> callback) const
+void Geometry::for_each_triangle(std::function<bool(const Eigen::Vector3f &, const Eigen::Vector3f &, const Eigen::Vector3f &)> callback) const
 {
-#pragma omp parallel for
     for (int i = 0; i < indices.size(); i += 3)
     {
-        callback(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+        bool go_on = callback(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+        if (!go_on)
+        {
+            break;
+        }
     }
 }
 
-void Geometry::for_each_triangle(std::function<void(Eigen::Vector3f &, Eigen::Vector3f &, Eigen::Vector3f &)> callback)
+void Geometry::for_each_triangle(std::function<bool(Eigen::Vector3f &, Eigen::Vector3f &, Eigen::Vector3f &)> callback)
 {
-#pragma omp parallel for
     for (int i = 0; i < indices.size(); i += 3)
     {
-        callback(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+        bool go_on = callback(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+        if (!go_on)
+        {
+            break;
+        }
     }
 }
 
@@ -146,6 +152,81 @@ Eigen::Vector3f Geometry::get_centroid() const
     }
     centroid /= vertices.size();
     return centroid;
+}
+
+static inline float sign(const Eigen::Vector2f &p1, const Eigen::Vector2f &p2, const Eigen::Vector2f &p3)
+{
+    return (p1.x() - p3.x()) * (p2.y() - p3.y()) - (p2.x() - p3.x()) * (p1.y() - p3.y());
+}
+
+static inline bool point_in_triangle(const Eigen::Vector2f &pt, const Eigen::Vector2f &v1, const Eigen::Vector2f &v2, const Eigen::Vector2f &v3)
+{
+    float d1 = sign(pt, v1, v2);
+    float d2 = sign(pt, v2, v3);
+    float d3 = sign(pt, v3, v1);
+    bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+    return !(has_neg && has_pos);
+}
+
+bool Geometry::hit(const Ray &ray, float &t, Eigen::Vector3f &normal) const
+{
+
+    struct Hit
+    {
+        float t;
+        Eigen::Vector3f normal;
+    };
+
+    std::vector<Hit> hits;
+    // transform vertices to ray space
+    Eigen::Vector3f right = ray.direction.isApprox(Eigen::Vector3f::UnitY()) ? Eigen::Vector3f::UnitX() : ray.direction.cross(Eigen::Vector3f::UnitY());
+    Eigen::Vector3f up = right.cross(ray.direction);
+    Eigen::Matrix4f transform;
+    transform.setZero();
+    transform(0, 0) = right.x();
+    transform(0, 1) = right.y();
+    transform(0, 2) = right.z();
+    transform(1, 0) = up.x();
+    transform(1, 1) = up.y();
+    transform(1, 2) = up.z();
+    transform(2, 0) = ray.direction.x();
+    transform(2, 1) = ray.direction.y();
+    transform(2, 2) = ray.direction.z();
+    transform(0, 3) = -right.dot(ray.origin);
+    transform(1, 3) = -up.dot(ray.origin);
+    transform(2, 3) = -ray.direction.dot(ray.origin);
+    transform(3, 3) = 1;
+
+    for_each_triangle([ray, &hits, &transform](const Eigen::Vector3f &a, const Eigen::Vector3f &b, const Eigen::Vector3f &c)
+                      {
+        static const Eigen::Vector2f origin(0, 0);
+        auto at = (transform * a.homogeneous()).head<3>();
+        auto bt = (transform * b.homogeneous()).head<3>();
+        auto ct = (transform * c.homogeneous()).head<3>();
+        if(point_in_triangle(origin, at.head<2>(), bt.head<2>(), ct.head<2>())){
+            float distance_a = sqrtf(at.x() * at.x() + at.y() * at.y());
+            float distance_b = sqrtf(bt.x() * bt.x() + bt.y() * bt.y());
+            float distance_c = sqrtf(ct.x() * ct.x() + ct.y() * ct.y());
+            float t = (at.z() * distance_a + bt.z() * distance_b + ct.z() * distance_c) / (distance_a + distance_b + distance_c);
+            Eigen::Vector3f normal = (bt - at).cross(ct - at).normalized();
+            hits.push_back({t, normal});
+        }
+        return true; });
+    
+    // no hits
+    if (hits.empty())
+    {
+        t = -1;
+        return false;
+    }
+
+    // sort hits by distance
+    std::sort(hits.begin(), hits.end(), [](const Hit &a, const Hit &b)
+              { return a.t < b.t; });
+    t = hits[0].t;
+    normal = hits[0].normal;
+    return true;
 }
 
 bool GeometryBuilder::TriangleIndices::operator<(const GeometryBuilder::TriangleIndices &other) const
@@ -192,7 +273,7 @@ void GeometryBuilder::add_triangle(const Eigen::Vector3f &a, const Eigen::Vector
 void GeometryBuilder::add_geometry(const Geometry &geometry)
 {
     geometry.for_each_triangle([this](const Eigen::Vector3f &a, const Eigen::Vector3f &b, const Eigen::Vector3f &c)
-                               { add_triangle(a, b, c); });
+                               { add_triangle(a, b, c); return true; });
 }
 
 Geometry GeometryBuilder::build()
@@ -227,7 +308,8 @@ namespace geometryops
             builder.add_geometry(basegeometries::quad(a, b, b + direction, a + direction));
             builder.add_geometry(basegeometries::quad(b, c, c + direction, b + direction));
             builder.add_geometry(basegeometries::quad(c, a, a + direction, c + direction));
-            builder.add_triangle(a + direction, b + direction, c+direction); });
+            builder.add_triangle(a + direction, b + direction, c+direction); 
+            return true; });
         return builder.build();
     }
 }

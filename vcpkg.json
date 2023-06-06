@@ -14,12 +14,6 @@
 		"glfw3",
 		"freetype",
 		{
-			"name": "cairo",
-			"features": [
-				"freetype"
-			]
-		},
-		{
 			"name": "dlfcn-win32",
 			"platform": "windows"
 		}

@@ -25,6 +25,10 @@ inline Eigen::Vector3f sphericalToCartesian(const Eigen::Vector3f &rtp) {
     return Eigen::Vector3f(x, y, z);
 }
 
+inline Eigen::Vector3f rotate(const Eigen::Vector3f &axis, float angle, const Eigen::Vector3f &v) {
+    return Eigen::AngleAxisf(angle, axis) * v;
+}
+
 inline float step(float edge, float x) {
     return x < edge ? 0.0f : 1.0f;
 }

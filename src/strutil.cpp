@@ -72,4 +72,12 @@ namespace strutil {
         return result;
     }
 
+    bool starts_with(const std::string& str, const std::string& prefix) {
+        return str.rfind(prefix, 0) == 0;
+    }
+
+    bool ends_with(const std::string& str, const std::string& suffix) {
+        return str.size() >= suffix.size() && str.rfind(suffix) == (str.size() - suffix.size());
+    }
+
 } // namespace strutil

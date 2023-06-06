@@ -12,6 +12,8 @@ private:
     bool owned;
 
 public:
+
+    Blob();
     Blob(size_t size);
 
     Blob(void *ptr, size_t size, bool owned = false);
@@ -21,6 +23,9 @@ public:
 
     Blob &operator=(const Blob &other) = delete;
     Blob &operator=(Blob &&other);
+
+
+    Blob copy() const;
 
     ~Blob();
 

@@ -3,6 +3,10 @@
 #include <cstring>
 #include <stdexcept>
 
+Blob::Blob() : ptr(nullptr), size(0), owned(false)
+{
+}
+
 Blob::Blob(size_t size_) : size(size_), owned(true)
 {
     ptr = malloc(size);
@@ -31,6 +35,12 @@ Blob &Blob::operator=(Blob &&other)
     owned = other.owned;
     other.owned = false;
     return *this;
+}
+
+Blob Blob::copy() const {
+    Blob blob(size);
+    memcpy(blob.ptr, ptr, size);
+    return blob;
 }
 
 Blob::~Blob()

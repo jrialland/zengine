@@ -17,10 +17,6 @@ find_package(GLEW CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 
-# vcpkg does not provide a classic cmake config file, so we need to use find_path and find_library
-find_path(CAIRO_INCLUDE_DIRS cairo/cairo.h)
-find_library(CAIRO_LIBRARIES cairo)
-
 ################################################################################
 # some libraries are such as stb are not available in vcpkg
 include(FetchContent)
@@ -52,7 +48,6 @@ set(ZENGINE_LIBRARIES
     GLEW::GLEW
     glfw
     Freetype::Freetype
-    ${CAIRO_LIBRARIES}
 )
 
 if(WIN32)
