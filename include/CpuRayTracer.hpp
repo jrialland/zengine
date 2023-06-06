@@ -17,7 +17,7 @@ class CpuRayTracer
 {
     std::shared_ptr<PerspectiveCamera> camera;
 
-    Eigen::Vector3f sun_direction = Eigen::Vector3f(-1.0f, -1.0f, -1.0f).normalized();
+    Eigen::Vector3f sun_direction = Eigen::Vector3f(-1.0f, -1.0f, 1.0f).normalized();
 
     std::vector<std::shared_ptr<Geometry>> geometries;
 
