@@ -34,6 +34,7 @@ void VertexArray::set_program(const std::string &vertex_shader, const std::strin
 
 std::shared_ptr<ShaderProgram> VertexArray::get_shader_program()
 {
+    shader_program->use();
     return shader_program;
 }
 
@@ -115,9 +116,6 @@ void VertexArray::set_ebo(const std::vector<uint32_t> &indices)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
     
-    // unbind the vao
-    glBindVertexArray(0);
-
     // set the count
     count = indices.size();
     LOG(INFO) << "vertices = " << count;
@@ -155,7 +153,7 @@ void VertexArray::render()
     }
     else
     {
-         if (ebo_id != 0)
+        if (ebo_id != 0)
         {
             glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr, count);
         }

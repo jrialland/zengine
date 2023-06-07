@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <functional>
+#include <memory>
 
 class Texture {
 
@@ -12,11 +13,11 @@ class Texture {
 
     public:
 
-    Texture(const std::string& path);
+    static std::shared_ptr<Texture> load(const std::string& path);
+
+    void to_unit(uint32_t unit);
 
     ~Texture();	
-
-    void attach(uint32_t slot = 0);
 
 };
 

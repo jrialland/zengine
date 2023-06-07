@@ -171,18 +171,7 @@ void ShaderProgram::run(int vertices)
 {
     assert(vertices % 3 == 0);
     glUseProgram(id);
-
-    // bind and empty EBO
-    uint32_t ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-    glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, NULL);
-
-    // unbind EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDeleteBuffers(1, &ebo);
-
+    glDrawArrays(GL_TRIANGLES, 0, vertices);
 }
 
 void ShaderProgram::set_uniform(const std::string &name, int32_t value)
