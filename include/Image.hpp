@@ -18,7 +18,7 @@ class Image {
     Blob data;
     Image(int width, int height, ImageType type, void* data, size_t len, std::function<void(void *)> deleter = [](void *) {});
 public:
-    static Image create(int width, int height, ImageType type);
+    static Image create(int width, int height, ImageType type=ImageType::RGBA_u32);
     static Image load(const std::string &filename, ImageType type);
     static Image load(const Blob &data, ImageType type);
     
@@ -31,8 +31,10 @@ public:
     void flip_vertically();
     
     void flip_horizontally();
-    
-    void rotate_90();
+
+    void rotate_clockwise();
+
+    void rotate_counterclockwise();
 
     void save(const std::string &filename) const;
     

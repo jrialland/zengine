@@ -71,6 +71,14 @@ Image Image::load(const Blob &data, ImageType type)
         break;
     case ImageType::GRAYSCALE_f32:
         len = width * height * sizeof(float);
+        float *float_data = (float *)malloc(len);
+        for (int i = 0; i < width * height; i++)
+        {
+            float_data[i] = img[i] / 255.0f;
+        }
+        stbi_image_free(img);
+        return Image(width, height, type, float_data, len, [](void *ptr)
+                     { free(ptr); });
         break;
     }
 
@@ -243,53 +251,6 @@ void Image::save(const std::string &filename) const
     }
 }
 
-void Image::flip_vertically()
-{
-    const size_t pixel_size = get_pixel_size();
-    uint8_t *tmp = (uint8_t *)alloca(width * pixel_size);
-    for (int y = 0; y < height / 2; y++)
-    {
-        uint8_t *row1 = data.as<uint8_t *>() + y * width * pixel_size;
-        uint8_t *row2 = data.as<uint8_t *>() + (height - y - 1) * width * pixel_size;
-        memcpy(tmp, row1, width * pixel_size);
-        memcpy(row1, row2, width * pixel_size);
-        memcpy(row2, tmp, width * pixel_size);
-    }
-}
-
-void Image::flip_horizontally()
-{
-    const size_t pixel_size = get_pixel_size();
-    uint8_t *tmp = (uint8_t *)alloca(pixel_size);
-    for (int y = 0; y < height; y++)
-    {
-        uint8_t *row = data.as<uint8_t *>() + y * width * pixel_size;
-        for (int x = 0; x < width / 2; x++)
-        {
-            uint8_t *pixel1 = row + x * pixel_size;
-            uint8_t *pixel2 = row + (width - x - 1) * pixel_size;
-            memcpy(tmp, pixel1, pixel_size);
-            memcpy(pixel1, pixel2, pixel_size);
-            memcpy(pixel2, tmp, pixel_size);
-        }
-    }
-}
-
-/**
- * @brief Transpose a matrix in place
- *
- * @tparam T type of the matrix elements
- * @param data  pointer to the matrix data
- * @param width  width of the matrix
- * @param height  height of the matrix
- */
-template <typename T>
-static inline void transpose(T *data, int width, int height)
-{
-    Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> mat(data, height, width);
-    mat.transposeInPlace();
-}
-
 struct PixelRGB
 {
     uint8_t r, g, b;
@@ -313,20 +274,96 @@ struct PixelRGBA
     }
 };
 
-void Image::rotate_90()
+void Image::flip_horizontally()
 {
-    if (type == ImageType::GRAYSCALE_f32)
-    {
-        transpose(data.as<float *>(), width, height);
+#define _IMAGE_DO_FLIP_H(type)                                                                                                  \
+    {                                                                                                                           \
+        Eigen::Map<Eigen::Matrix<type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> mat(data.as<type *>(), height, width); \
+        mat.rowwise().reverseInPlace();                                                                                         \
     }
-    else if (type == ImageType::RGB_u24)
+    switch (type)
     {
-        transpose(data.as<PixelRGB *>(), width, height);
+    case ImageType::RGB_u24:
+        _IMAGE_DO_FLIP_H(PixelRGB);
+        break;
+    case ImageType::RGBA_u32:
+        _IMAGE_DO_FLIP_H(PixelRGBA);
+        break;
+    case ImageType::GRAYSCALE_f32:
+        _IMAGE_DO_FLIP_H(float);
+        break;
     }
-    else if (type == ImageType::RGBA_u32)
+#undef _IMAGE_DO_FLIP_H
+}
+
+void Image::flip_vertically()
+{
+#define _IMAGE_DO_FLIP_V(type)                                                                                                  \
+    {                                                                                                                           \
+        Eigen::Map<Eigen::Matrix<type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> mat(data.as<type *>(), height, width); \
+        mat.colwise().reverseInPlace();                                                                                         \
+    }
+    switch (type)
     {
-        transpose(data.as<PixelRGBA *>(), width, height);
+    case ImageType::RGB_u24:
+        _IMAGE_DO_FLIP_V(PixelRGB);
+        break;
+    case ImageType::RGBA_u32:
+        _IMAGE_DO_FLIP_V(PixelRGBA);
+        break;
+    case ImageType::GRAYSCALE_f32:
+        _IMAGE_DO_FLIP_V(float);
+        break;
     }
+#undef _IMAGE_DO_FLIP_V
+}
+
+void Image::rotate_clockwise()
+{
+#define _IMAGE_DO_ROTATE_CW(type)                                                                                               \
+    {                                                                                                                           \
+        Eigen::Map<Eigen::Matrix<type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> mat(data.as<type *>(), height, width); \
+        mat.transposeInPlace();                                                                                                 \
+        mat.colwise().reverseInPlace();                                                                                         \
+    }
+    switch (type)
+    {
+    case ImageType::RGB_u24:
+        _IMAGE_DO_ROTATE_CW(PixelRGB);
+        break;
+    case ImageType::RGBA_u32:
+        _IMAGE_DO_ROTATE_CW(PixelRGBA);
+        break;
+    case ImageType::GRAYSCALE_f32:
+        _IMAGE_DO_ROTATE_CW(float);
+        break;
+    }
+#undef _IMAGE_DO_ROTATE_CW
+    std::swap(width, height);
+}
+
+void Image::rotate_counterclockwise()
+{
+#define _IMAGE_DO_ROTATE_CCW(type)                                                                                              \
+    {                                                                                                                           \
+        Eigen::Map<Eigen::Matrix<type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> mat(data.as<type *>(), height, width); \
+        mat.transposeInPlace();                                                                                                 \
+        mat.rowwise().reverseInPlace();                                                                                         \
+    }
+
+    switch (type)
+    {
+    case ImageType::RGB_u24:
+        _IMAGE_DO_ROTATE_CCW(PixelRGB);
+        break;
+    case ImageType::RGBA_u32:
+        _IMAGE_DO_ROTATE_CCW(PixelRGBA);
+        break;
+    case ImageType::GRAYSCALE_f32:
+        _IMAGE_DO_ROTATE_CCW(float);
+        break;
+    }
+#undef _IMAGE_DO_ROTATE_CCW
     std::swap(width, height);
 }
 
