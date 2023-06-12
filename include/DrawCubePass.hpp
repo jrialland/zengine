@@ -11,5 +11,5 @@ class DrawCubePass : public Pass
     std::shared_ptr<VertexBuffer> elementBuffer; // TODO: may change the class name to 'Buffer' and add a 'type' field
     public:    
     DrawCubePass();
-    void execute(RenderingSystem &renderingSystem) override;
+    void execute() override;
 };

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-
+#include <utility>
 #include "Blob.hpp"
 
 class FsEntry {
@@ -15,6 +15,7 @@ class FsEntry {
     virtual Blob read()=0;
     void write(const Blob& blob);
     virtual void write(const void* data, size_t size)=0;
+    virtual void write(std::function<std::pair<const void*, size_t>()> provider)=0;
     virtual bool is_readonly()=0;
     virtual long last_modified()=0;
 };

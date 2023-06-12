@@ -41,7 +41,7 @@ class HelloTriangle : public Pass
     
 }
 
-void execute(RenderingSystem &renderingSystem) override {
+void execute() override {
     vao.render();
 }
 };
@@ -53,7 +53,7 @@ class Example1 : public Application
 	void init() override
 	{
 
-		get_rendering_system().add_pass("drawcube", std::make_shared<HelloTriangle>());
+		get_rendering_system()->add_pass("drawcube", std::make_shared<HelloTriangle>());
 	}
 };
 

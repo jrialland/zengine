@@ -42,7 +42,7 @@ class HelloEbo : public Pass
     LOG(INFO) << "done";
 }
 
-void execute(RenderingSystem &renderingSystem) override {
+void execute() override {
     vao.render();
 }
 };
@@ -54,7 +54,7 @@ class Example2 : public Application
 	void init() override
 	{
 
-		get_rendering_system().add_pass("drawcube", std::make_shared<HelloEbo>());
+		get_rendering_system()->add_pass("drawcube", std::make_shared<HelloEbo>());
 	}
 };
 

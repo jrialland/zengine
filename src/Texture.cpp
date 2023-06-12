@@ -1,44 +1,55 @@
 #include "Texture.hpp"
-#include "FileSystem.hpp"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "stb_image.h"
-
-#include <stdexcept>
-#include <cassert>
-#include <cstring>
+static uint32_t get_format(int channels) {
+        switch(channels) {
+                case 1: return GL_RED;
+                case 2: return GL_RG;
+                case 3: return GL_RGB;
+                case 4: return GL_RGBA;
+                default: throw std::runtime_error("invalid number of channels");
+        }
+}
 
 std::shared_ptr<Texture> Texture::load(const std::string& path) {
-    Texture* texture = new Texture;
-    Blob blob = FileSystem::get_entry(path)->read();
+        return std::make_shared<Texture>(Image::load(path));
+}
 
-    glGenTextures(1, &texture->id);
-    glBindTexture(GL_TEXTURE_2D, texture->id);
+Texture::Texture(const Image &image) : dimensions(image.get_dimensions()), channels(image.get_channels()) {
 
-    stbi_uc* data = stbi_load_from_memory(blob.as<stbi_uc*>(), blob.get_size(), &texture->width, &texture->height, &texture->channels, 0);
-    if(!data) {
-        glDeleteTextures(1, &texture->id);
-        throw std::runtime_error("Failed to load texture: " + path);
-    }
-    glTexImage2D(GL_TEXTURE_2D, 0, texture->channels==4 ? GL_RGBA : GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    stbi_image_free(data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+        uint32_t format = get_format(channels);
 
-    return std::shared_ptr<Texture>(texture);
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        // set the texture wrapping/filtering options (on the currently bound texture object)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, dimensions.x(), dimensions.y(), 0, format, GL_UNSIGNED_BYTE, image.get_data());
+        glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void Texture::to_unit(uint32_t unit) {
-    assert(unit < 32);
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, id);
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, id);
 }
 
+Eigen::Vector2i Texture::get_dimensions() const {
+        return dimensions;
+}
 
+Image Texture::to_image() {
+        glBindTexture(GL_TEXTURE_2D, id);
+        Image image(dimensions.x(), dimensions.y(), channels);
+        uint32_t format = get_format(channels);
+        glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, image.get_data());
+        return image;
+}
 
 Texture::~Texture() {
     glDeleteTextures(1, &id);
-}
-
-
+}	

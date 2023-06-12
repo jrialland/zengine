@@ -47,7 +47,7 @@ class ColorTriangle : public Pass
     
 }
 
-void execute(RenderingSystem &renderingSystem) override {
+void execute() override {
     vao.render();
 }
 };
@@ -59,7 +59,7 @@ class Example3 : public Application
 	void init() override
 	{
 
-		get_rendering_system().add_pass("drawcube", std::make_shared<ColorTriangle>());
+		get_rendering_system()->add_pass("drawcube", std::make_shared<ColorTriangle>());
 	}
 };
 

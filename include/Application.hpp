@@ -1,23 +1,24 @@
 #pragma once
 
 #include "Window.hpp"
-#include "RenderingSystem.hpp"
+#include <memory>
+
+class RenderingSystem;
 
 class Application {
 
-    Window window;
+    Window* window;
 
-    RenderingSystem rendering_system;
+    RenderingSystem* rendering_system;
 
 public:
     Application();
-    ~Application();
-
+    virtual ~Application();
     int run(int argc, char **argv);
 
-    RenderingSystem &get_rendering_system();
+    RenderingSystem* get_rendering_system();
 
-    Window &get_window();
+    Window* get_window();
 
 protected:
 

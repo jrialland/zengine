@@ -64,12 +64,31 @@ public:
 
     void write(const void *data, size_t size) override
     {
+        bool done = false;
+        write([&]() -> std::pair<const void *, size_t> {
+            if (done)
+            {
+                return {nullptr, 0};
+            }
+            done = true;
+            return {data, size};
+        });
+    }
+
+    void write(std::function<std::pair<const void*, size_t>()> provider) override {
         std::ofstream file(path.string().c_str(), std::ios::binary);
         if (!file)
         {
             throw std::runtime_error("Failed to open file '" + path.string() + "' for writing");
         }
-        file.write(reinterpret_cast<const char *>(data), size);
+        while(file.good()) {
+            auto data = provider();
+            if(data.second == 0) {
+                break;
+            }
+            file.write(reinterpret_cast<const char *>(data.first), data.second);
+        }
+        file.flush();
     }
 
     virtual bool is_readonly() override
@@ -165,6 +184,10 @@ public:
     virtual long last_modified() override
     {
         return 0;
+    }
+
+    void write(std::function<std::pair<const void*, size_t>()> provider) override {
+        throw std::runtime_error("read-only");
     }
 };
 

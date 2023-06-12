@@ -29,9 +29,10 @@ DrawCubePass::DrawCubePass()
 }
 
 
-void DrawCubePass::execute(RenderingSystem &renderingSystem)
+void DrawCubePass::execute()
 {
-    Eigen::Matrix4f mvp = renderingSystem.get_camera()->get_projection() * renderingSystem.get_camera()->get_view(); // no model, just the cube geometry 1*1*1 centered at 0,0,0
+    auto camera = get_rendering_system()->get_camera();
+    Eigen::Matrix4f mvp = camera->get_projection() * camera->get_view(); // no model, just the cube geometry 1*1*1 centered at 0,0,0
     vao.get_shader_program()->set_uniform("mvp", mvp); // TODO get_shader_program() => get_program() ?
     vao.render();
 }

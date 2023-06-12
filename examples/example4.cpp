@@ -55,7 +55,7 @@ public:
         vao.get_shader_program()->set_uniform("texture1", 0);
     }
 
-    void execute(RenderingSystem &renderingSystem) override
+    void execute() override
     {
         vao.render();
     }
@@ -67,7 +67,7 @@ class Example4 : public Application
     void init() override
     {
 
-        get_rendering_system().add_pass("drawcube", std::make_shared<HelloTexture>());
+        get_rendering_system()->add_pass("drawcube", std::make_shared<HelloTexture>());
     }
 };
 

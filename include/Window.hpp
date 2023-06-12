@@ -11,5 +11,5 @@ class Window {
     Window(const std::string& title="", int width=800, int height=600, bool fullscreen=false);
     ~Window();
     util::signal<const Eigen::Vector2i &> resized;
-    Eigen::Vector2i get_size() const;
+    Eigen::Vector2i get_dimensions() const;
 };

@@ -59,11 +59,9 @@ void VertexArray::bind_buffer(int location, const std::string &format, std::shar
     auto vs = VertexStructure::parse_format(format);
 
     // bind the vao
-    LOG(INFO) << "glBindVertexArray(" << id << ")";
     glBindVertexArray(id);
 
     // bind the buffer
-    LOG(INFO) << "glBindBuffer(GL_ARRAY_BUFFER, " << buffer->id << ")";
     glBindBuffer(GL_ARRAY_BUFFER, buffer->id);
 
     // set the attribute
@@ -72,9 +70,9 @@ void VertexArray::bind_buffer(int location, const std::string &format, std::shar
 
     void *pOffset = reinterpret_cast<void *>((uint64_t)vs.offset); // opengl is an old api made with 32 bits in mind, so we have to cast to uint64_t to avoid warnings
 
-    LOG(INFO) << "glVertexAttribPointer(" << location << ", " << vs.components_count << ", " << vs.gl_type << ", "
-              << "GL_FALSE"
-              << ", " << vs.stride << ", " << pOffset << ")";
+//    LOG(INFO) << "glVertexAttribPointer(" << location << ", " << vs.components_count << ", " << vs.gl_type << ", "
+//              << "GL_FALSE"
+//              << ", " << vs.stride << ", " << pOffset << ")";
     glVertexAttribPointer(location, vs.components_count, vs.gl_type, GL_FALSE, vs.stride, pOffset);
 
     // a value of 0 means that the attribute is not instanced

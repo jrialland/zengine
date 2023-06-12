@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-RenderingSystem::RenderingSystem()
+RenderingSystem::RenderingSystem(Application* application_) : application(application_)
 {
     camera = std::shared_ptr<Camera>(new PerspectiveCamera(degToRad(60.0f), 1.0, 0.1f, 1000.0f));
     init();
@@ -31,6 +31,7 @@ void RenderingSystem::init_passes() {
 
 void RenderingSystem::add_pass(const std::string &name, std::shared_ptr<Pass> pass, const std::string &after , const std::string &before)
 {
+    pass->init(std::shared_ptr<RenderingSystem>(this));
     auto passInfo = PassInfo{name, pass};
     if (after.empty() && before.empty())
     {
@@ -147,12 +148,26 @@ void RenderingSystem::render()
     {
         if (passInfo.enabled)
         {
-            passInfo.pass->execute(*this);
+            passInfo.pass->execute();
         }
     }
+}
+
+Application* RenderingSystem::get_application() const
+{
+    return application;
 }
 
 std::shared_ptr<Camera> RenderingSystem::get_camera() const
 {
     return camera;
 }
+
+void Pass::init(std::shared_ptr<RenderingSystem> renderingSystem) {
+    this->renderingSystem = renderingSystem;
+}
+
+std::shared_ptr<RenderingSystem> Pass::get_rendering_system() const {
+    return renderingSystem;
+}
+

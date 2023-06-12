@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 
+#include "Application.hpp"
 #include "Camera.hpp"
 
 struct Pass;
@@ -18,11 +19,13 @@ class RenderingSystem {
 
     std::vector<PassInfo> passes;
 
+    Application* application;
+
     std::shared_ptr<Camera> camera;
 
     public:
 
-    RenderingSystem();
+    RenderingSystem(Application* application);
 
     ~RenderingSystem();
 
@@ -51,8 +54,15 @@ class RenderingSystem {
     void render();
 
     std::shared_ptr<Camera> get_camera() const;
+
+    Application* get_application() const;
 };
 
 struct Pass {
-    virtual void execute(RenderingSystem &renderingSystem)=0;
+    private:
+        std::shared_ptr<RenderingSystem> renderingSystem;
+    public:
+    virtual void init(std::shared_ptr<RenderingSystem> renderingSystem);
+    std::shared_ptr<RenderingSystem> get_rendering_system() const;
+    virtual void execute()=0;
 };

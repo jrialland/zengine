@@ -76,11 +76,11 @@ struct temporary_set_depth_func_to_lequal
     }
 };
 
-void SkyboxPass::execute(RenderingSystem &renderingSystem)
+void SkyboxPass::execute()
 {
     temporary_set_depth_func_to_lequal tmp;
 
-    auto camera = renderingSystem.get_camera();
+    auto camera = get_rendering_system()->get_camera();
 
     skyboxShader->use();
 
