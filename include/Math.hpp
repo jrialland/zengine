@@ -51,10 +51,10 @@ inline Eigen::Matrix4f create_perspective_projection_from_bounds(float left, flo
     float E = (2 * near) / (right - left);
     float F = (2 * near) / (top - bottom);
     return Eigen::Matrix4f({
-        {E, 0, 0, 0},
-        {0, F, 0, 0},
-        {A, B, C, -1},
-        {0, 0, D, 0}
+            {E, 0, 0, 0},
+            {0, F, 0, 0},
+            {A, B, C, -1},
+            {0, 0, D, 0}
     });
 }
 

@@ -11,6 +11,7 @@
 		"eigen3",
 		"opengl",
 		"glew",
-		"glfw3"
+		"glfw3",
+		"stb"
 	]
 }

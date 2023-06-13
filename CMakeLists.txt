@@ -46,19 +46,12 @@ endif()
 include(FetchContent)
 
 FetchContent_Declare(
-  stb
-  GIT_REPOSITORY https://github.com/nothings/stb
-  GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
-)
-
-FetchContent_Declare(
     backward
     GIT_REPOSITORY https://github.com/bombela/backward-cpp
     GIT_TAG v1.6
 )
 
 FetchContent_MakeAvailable(
-    stb
     backward
 )
 
@@ -108,7 +101,6 @@ file(GLOB_RECURSE ZENGINE_SOURCES CONFIGURE_DEPENDS src/**.cpp)
 add_library(zengine SHARED ${ZENGINE_SOURCES})
 target_link_libraries(zengine PRIVATE ${ZENGINE_LIBRARIES})
 target_include_directories(zengine PRIVATE
-    ${stb_SOURCE_DIR}
     ${BACKWARD_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/include
 )
@@ -161,7 +153,6 @@ endif()
 
 target_include_directories(tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${stb_SOURCE_DIR}
     ${BACKWARD_INCLUDE_DIRS}
 )
 
