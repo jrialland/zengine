@@ -5,7 +5,7 @@
 
 RenderingSystem::RenderingSystem(Application* application_) : application(application_)
 {
-    camera = std::shared_ptr<Camera>(new PerspectiveCamera(degToRad(60.0f), 1.0, 0.1f, 1000.0f));
+    camera = std::shared_ptr<Camera>(new PerspectiveCamera(60.0_deg, 1.0, 0.1f, 1000.0f));
     init();
     init_passes();
 }
@@ -17,7 +17,7 @@ RenderingSystem::~RenderingSystem()
 void RenderingSystem::init() {
     // set some common opengl defaults
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL); // because we render the skybox after everything else
+    glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);

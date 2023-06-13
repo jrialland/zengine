@@ -180,4 +180,4 @@ function(dump_all_variables)
     endforeach()
 endfunction()
 
-dump_all_variables()
+#dump_all_variables()

@@ -16,12 +16,11 @@ protected:
     float near;
     float far;
     float aspectRatio;
-
 public:
     Eigen::Vector3f get_position() const;
 
-    void set_near(float near);
-    void set_far(float far);
+    virtual void set_near(float near);
+    virtual void set_far(float far);
     float get_near() const;
     float get_far() const;
 
@@ -61,7 +60,7 @@ public:
      * @param pitch rotation around the right axis (in radians)
      * @param yaw rotation around the up axis (in radians)
      */
-    void rotate(float roll, float pitch, float yaw);
+    void rotate(angle_t roll, angle_t pitch, angle_t yaw);
 
     /**
      * the transformation matrix from world space to camera space
@@ -96,17 +95,20 @@ class PerspectiveCamera : public Camera
 
 private:
     float fov;
-
+    Eigen::Matrix4f projection;
+    bool proj_dirty = false;
 public:
     /**
     * By default, the camera is at the origin, looking along the positive z axis, with the positive y axis as up, and the positive x axis as right
     */
-    PerspectiveCamera(float fov = M_PI / 4, float aspectRatio = 1.0f, float near = 0.1f, float far = 1000.0f);
+    PerspectiveCamera(angle_t fov = 45.0_deg, float aspectRatio = 1.0f, float near = 0.1f, float far = 1000.0f);
 
-    void set_fov(float fov);
+    void set_fov(angle_t fov);
 
-    float get_fov() const;
+    angle_t get_fov() const;
 
+    void set_near(float near) override;
+    void set_far(float far) override;
 
     /**
      * @brief create a ray from the camera to the given pixel

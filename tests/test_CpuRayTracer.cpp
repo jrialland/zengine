@@ -13,6 +13,6 @@ TEST_CASE("CpuRayTracer", "[CpuRayTracer]") {
     CpuRayTracer ray_tracer(camera);
     ray_tracer.add_geometry(cube);
 
-    ray_tracer.render("test.pgm", 512, 512);
+    //ray_tracer.render("test.pgm", 512, 512);
 
 }

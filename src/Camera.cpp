@@ -104,7 +104,7 @@ void Camera::look_at(const Eigen::Vector3f &target)
     up = right.cross(direction);
 }
 
-void Camera::rotate(float roll, float pitch, float yaw)
+void Camera::rotate(angle_t roll, angle_t pitch, angle_t yaw)
 {
     Eigen::AngleAxisf rollAngle(roll, direction);
     Eigen::AngleAxisf pitchAngle(pitch, right);
@@ -117,22 +117,7 @@ void Camera::rotate(float roll, float pitch, float yaw)
 
 Eigen::Matrix4f Camera::get_view() const
 {
-    Eigen::Matrix4f view;
-    view.setZero();
-    view(0, 0) = right.x();
-    view(0, 1) = right.y();
-    view(0, 2) = right.z();
-    view(1, 0) = up.x();
-    view(1, 1) = up.y();
-    view(1, 2) = up.z();
-    view(2, 0) = direction.x();
-    view(2, 1) = direction.y();
-    view(2, 2) = direction.z();
-    view(0, 3) = -right.dot(position);
-    view(1, 3) = -up.dot(position);
-    view(2, 3) = -direction.dot(position);
-    view(3, 3) = 1;
-    return view;
+    return ::look_at(position, position + direction, up);
 }
 
 Eigen::Vector3f Camera::get_screen_center() const
@@ -159,43 +144,53 @@ Eigen::Vector3f Camera::get_screen_bottom_right() const
     return get_screen_center() - up * get_screen_height()/2 + right * get_screen_width()/2;
 }
 
-PerspectiveCamera::PerspectiveCamera(float fov_, float aspectRatio, float near, float far) : fov(fov_)
+PerspectiveCamera::PerspectiveCamera(angle_t fov_, float aspectRatio, float near, float far) : fov(fov_)
 {
     set_aspect(aspectRatio);
     set_near(near);
     set_far(far);
+    projection = create_perspective_projection(fov, aspectRatio, near, far);
 }
 
-void PerspectiveCamera::set_fov(float fov)
+void PerspectiveCamera::set_near(float near) {
+    Camera::set_near(near);
+    proj_dirty = true;
+}
+
+void PerspectiveCamera::set_far(float far)  {
+    Camera::set_far(far);
+    proj_dirty = true;
+}
+
+void PerspectiveCamera::set_fov(angle_t fov)
 {
     this->fov = fov;
+    proj_dirty = true;
 }
 
-float PerspectiveCamera::get_fov() const
+angle_t PerspectiveCamera::get_fov() const
 {
     return fov;
 }
 
 Eigen::Matrix4f PerspectiveCamera::get_projection() const
 {
-    Eigen::Matrix4f projection;
-    projection.setZero();
-    projection(0, 0) = 1 / (aspectRatio * std::tan(fov / 2));
-    projection(1, 1) = 1 / std::tan(fov / 2);
-    projection(2, 2) = -(far + near) / (far - near);
-    projection(2, 3) = -2 * far * near / (far - near);
-    projection(3, 2) = -1;
+    if(proj_dirty) {
+        PerspectiveCamera* nonconst = const_cast<PerspectiveCamera*>(this);
+        nonconst->projection = create_perspective_projection(fov, aspectRatio, near, far);
+        nonconst->proj_dirty = false;
+    }
     return projection;
 }
 
 float PerspectiveCamera::get_screen_width() const
 {
-    return 2 * tan(fov / 2) * near;
+    return get_screen_height() * aspectRatio;
 }
 
 float PerspectiveCamera::get_screen_height() const
 {
-    return get_screen_width() / aspectRatio;
+    return 2 * tan(fov / 2) * near;
 }
 
 
@@ -216,16 +211,8 @@ OrthographicCamera::OrthographicCamera(float width_, float height, float near = 
     set_far(far);
 }
 
-Eigen::Matrix4f OrthographicCamera::get_projection() const
-{
-    Eigen::Matrix4f projection;
-    projection.setZero();
-    projection(0, 0) = 1 / (width / aspectRatio);
-    projection(1, 1) = 1 / width;
-    projection(2, 2) = -2 / (far - near);
-    projection(2, 3) = -(far + near) / (far - near);
-    projection(3, 3) = 1;
-    return projection;
+Eigen::Matrix4f OrthographicCamera::get_projection() const{
+    return create_orthographic_projection(-width / 2, width/2, -width / 2 / aspectRatio, width / 2 / aspectRatio, near, far);
 }
 
 float OrthographicCamera::get_screen_width() const {

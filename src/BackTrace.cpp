@@ -11,6 +11,7 @@ void print_backtrace(int skip)
 
     StackTrace st;
     st.load_here(32);
+    st.skip_n_firsts(3+skip);
 
     TraceResolver tr;
     tr.load_stacktrace(st);
